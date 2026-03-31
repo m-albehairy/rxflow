@@ -53,6 +53,7 @@
   "session": "Session",
   "sessionId": "Session ID",
   "cashIn": "Cash In",
+  "cashOut": "Cash Out",
   "mergeOrders": "Merge Orders",
   "selectAtLeastTwo": "Select at least 2 orders to merge",
   "mergeSuccess": "Orders merged successfully",

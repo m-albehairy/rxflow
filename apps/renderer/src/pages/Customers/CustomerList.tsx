@@ -3,6 +3,7 @@ import { Table, Button, Input, Space, Tag, Drawer, Form, App, Typography, Card, 
 import { PlusOutlined, SearchOutlined, ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { customersApi } from '@/api/customers.api';
+import { useUIStore } from '@/store/ui.store';
 
 const { Title } = Typography;
 
@@ -28,6 +29,8 @@ function getAvatarColor(name?: string): string {
 export function CustomersPage() {
   const { t } = useTranslation('customers');
   const { message } = App.useApp();
+  const language = useUIStore((s) => s.language);
+  const isRTL = language === 'ar';
   const [customers, setCustomers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
@@ -134,8 +137,9 @@ export function CustomersPage() {
         title={t('addCustomer')}
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
+        placement={isRTL ? 'left' : 'right'}
         width={480}
-        destroyOnClose
+        destroyOnHidden
         extra={
           <Space>
             <Button onClick={() => setDrawerOpen(false)}>{t('cancel', 'Cancel')}</Button>

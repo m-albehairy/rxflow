@@ -30,4 +30,9 @@ export const usersApi = {
 
   updateRole: (id: string, data: Record<string, unknown>) =>
     apiClient.patch(`/roles/${id}`, data),
+
+  resetPassword: (id: string, newPassword: string) =>
+    apiClient.post(`/users/${id}/reset-password`, { newPassword }),
+
+  deleteRole: (id: string) => apiClient.delete(`/roles/${id}`),
 };

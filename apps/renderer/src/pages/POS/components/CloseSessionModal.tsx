@@ -43,7 +43,7 @@ export function CloseSessionModal({ open, onClose }: Props) {
       onCancel={onClose}
       footer={null}
       width={500}
-      destroyOnClose
+      destroyOnHidden
     >
       {currentShift && (
         <Descriptions column={1} size="small" bordered style={{ marginBottom: 16 }}>

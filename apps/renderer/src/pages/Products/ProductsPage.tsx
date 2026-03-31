@@ -27,6 +27,7 @@ export function ProductsPage() {
   const { t } = useTranslation('products');
   const { message } = App.useApp();
   const language = useUIStore((s) => s.language);
+  const isRTL = language === 'ar';
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
@@ -252,8 +253,9 @@ export function ProductsPage() {
         title={t('addProduct')}
         open={quickOpen}
         onClose={() => setQuickOpen(false)}
+        placement={isRTL ? 'left' : 'right'}
         width={480}
-        destroyOnClose
+        destroyOnHidden
         extra={
           <Space>
             <Button onClick={() => setQuickOpen(false)}>Cancel</Button>
@@ -275,8 +277,9 @@ export function ProductsPage() {
         title={quickEditing ? t('editProduct', 'Edit Product') : t('productDetails', 'Product Details')}
         open={detailOpen}
         onClose={() => { setDetailOpen(false); setQuickEditing(false); }}
+        placement={isRTL ? 'left' : 'right'}
         width={520}
-        destroyOnClose
+        destroyOnHidden
         extra={
           quickEditing ? (
             <Space>
@@ -347,8 +350,9 @@ export function ProductsPage() {
         title={detailedMode === 'edit' ? 'Edit Product (Detailed)' : 'New Product (Detailed)'}
         open={detailedOpen}
         onClose={() => setDetailedOpen(false)}
+        placement={isRTL ? 'left' : 'right'}
         width={680}
-        destroyOnClose
+        destroyOnHidden
         extra={
           <Space>
             <Button onClick={() => setDetailedOpen(false)}>Cancel</Button>

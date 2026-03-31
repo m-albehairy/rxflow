@@ -3,6 +3,8 @@ import { Typography } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { PharmacistCharacter } from './PharmacistCharacter';
 import { LoginForm } from './LoginForm';
+import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
+import { useUIStore } from '@/store/ui.store';
 import type { LoginAnimationControls } from './useLoginAnimationState';
 import type { LoginColorScheme } from './LoginTheme';
 
@@ -17,11 +19,13 @@ interface Props {
 
 export function LoginFormPanel({ onFinish, loading, animationControls, colors }: Props) {
   const { t } = useTranslation('common');
+  const language = useUIStore((s) => s.language);
+  const isRTL = language === 'ar';
 
   return (
     <div
       style={{
-        flex: '0 0 55%',
+        flex: '0 0 40%',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -32,21 +36,28 @@ export function LoginFormPanel({ onFinish, loading, animationControls, colors }:
         overflow: 'hidden',
       }}
     >
-      {/* Subtle Eye of Horus watermark */}
+      {/* Language switcher */}
+      <div style={{ position: 'absolute', top: 16, ...(isRTL ? { left: 16 } : { right: 16 }), zIndex: 10 }}>
+        <LanguageSwitcher />
+      </div>
+
+      {/* Subtle Rx watermark */}
       <div
         style={{
           position: 'absolute',
           bottom: 30,
-          right: 30,
+          ...(isRTL ? { left: 30 } : { right: 30 }),
           opacity: 0.03,
           fontSize: 180,
+          fontWeight: 700,
+          fontFamily: 'serif',
           color: colors.gold,
           lineHeight: 1,
           pointerEvents: 'none',
           userSelect: 'none',
         }}
       >
-        &#x13080;
+        Rx
       </div>
 
       {/* Character + Card container */}

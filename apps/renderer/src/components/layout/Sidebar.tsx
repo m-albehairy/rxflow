@@ -15,6 +15,7 @@ import {
   InboxOutlined,
   CreditCardOutlined,
   ClockCircleOutlined,
+  UserOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -124,7 +125,7 @@ export function Sidebar() {
       : []),
 
     // ── SYSTEM ──
-    ...((perms.canAccessReports || perms.canAccessSettings)
+    ...((perms.canAccessReports || perms.canAccessSettings || perms.canManageUsers)
       ? [
           !collapsed
             ? ({ type: 'group' as const, label: <CategoryLabel label="SYSTEM" />, children: [] } as ItemType)
@@ -145,6 +146,9 @@ export function Sidebar() {
             : []),
           ...(perms.canAccessSettings
             ? [{ key: '/settings', icon: <SettingOutlined />, label: t('settings') } as ItemType]
+            : []),
+          ...(perms.canManageUsers
+            ? [{ key: '/users', icon: <UserOutlined />, label: t('users') } as ItemType]
             : []),
         ]
       : []),

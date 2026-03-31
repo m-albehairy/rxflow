@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Param, Body } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, Body } from '@nestjs/common';
 import { RolesService } from '../services/roles.service';
 import { RequirePermission } from '../../../common/decorators/permission.decorator';
 import { CreateRoleDto } from '../dto/create-role.dto';
@@ -23,5 +23,11 @@ export class RolesController {
   @RequirePermission('users:manage')
   async update(@Param('id') id: string, @Body() dto: UpdateRoleDto) {
     return this.rolesService.update(id, dto);
+  }
+
+  @Delete(':id')
+  @RequirePermission('users:manage')
+  async delete(@Param('id') id: string) {
+    return this.rolesService.delete(id);
   }
 }

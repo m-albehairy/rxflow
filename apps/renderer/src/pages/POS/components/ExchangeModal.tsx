@@ -84,7 +84,7 @@ export function ExchangeModal({ open, onClose }: Props) {
       onCancel={handleClose}
       footer={null}
       width={700}
-      destroyOnClose
+      destroyOnHidden
     >
       <Steps
         current={step}

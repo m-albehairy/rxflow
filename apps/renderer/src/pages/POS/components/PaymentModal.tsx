@@ -89,7 +89,7 @@ export function PaymentModal({ open, onClose, shiftId }: Props) {
       onCancel={onClose}
       footer={null}
       width={500}
-      destroyOnClose
+      destroyOnHidden
     >
       <Title level={3} style={{ textAlign: 'center' }}>
         {total.toFixed(2)}
@@ -120,7 +120,7 @@ export function PaymentModal({ open, onClose, shiftId }: Props) {
           <Divider />
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <Title level={4}>{t('change')}:</Title>
-            <Title level={4} style={{ color: '#52c41a' }}>{change.toFixed(2)}</Title>
+            <Title level={4} style={{ color: 'var(--app-color-success)' }}>{change.toFixed(2)}</Title>
           </div>
         </>
       )}

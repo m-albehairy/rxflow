@@ -52,8 +52,8 @@ export function OrderTabs() {
                 padding: '4px 12px',
                 borderRadius: 6,
                 cursor: 'pointer',
-                background: isActive ? '#52c41a' : '#f0f0f0',
-                color: isActive ? '#fff' : '#333',
+                background: isActive ? 'var(--app-color-primary)' : 'var(--app-color-bg-layout, #f0f0f0)',
+                color: isActive ? '#fff' : 'var(--app-color-text, #333)',
                 fontWeight: isActive ? 600 : 400,
                 fontSize: 13,
                 whiteSpace: 'nowrap',
@@ -61,7 +61,7 @@ export function OrderTabs() {
               }}
             >
               <span>{tab.label}</span>
-              <Text style={{ color: isActive ? '#fff' : '#666', fontSize: 12 }}>
+              <Text style={{ color: isActive ? '#fff' : 'var(--app-color-text-secondary, #666)', fontSize: 12 }}>
                 {currency} {total}
               </Text>
               {tabs.length > 1 && (

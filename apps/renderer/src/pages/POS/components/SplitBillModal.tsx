@@ -33,7 +33,7 @@ export function SplitBillModal({ open, onClose }: Props) {
       onCancel={onClose}
       footer={null}
       width={500}
-      destroyOnClose
+      destroyOnHidden
     >
       <Title level={4} style={{ textAlign: 'center' }}>
         {t('grandTotal')}: {currency} {total.toFixed(2)}

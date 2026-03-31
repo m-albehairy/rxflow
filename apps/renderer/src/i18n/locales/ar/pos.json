@@ -53,6 +53,7 @@
   "session": "الجلسة",
   "sessionId": "رقم الجلسة",
   "cashIn": "إيداع نقدي",
+  "cashOut": "سحب نقدي",
   "mergeOrders": "دمج الطلبات",
   "selectAtLeastTwo": "اختر طلبين على الأقل للدمج",
   "mergeSuccess": "تم دمج الطلبات بنجاح",

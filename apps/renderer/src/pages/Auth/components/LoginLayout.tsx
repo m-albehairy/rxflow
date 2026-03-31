@@ -27,13 +27,13 @@ export function LoginLayout({ onFinish, loading, animationControls }: Props) {
         overflow: 'hidden',
       }}
     >
-      <IllustrationPanel colors={colors} />
       <LoginFormPanel
         onFinish={onFinish}
         loading={loading}
         animationControls={animationControls}
         colors={colors}
       />
+      <IllustrationPanel colors={colors} />
     </div>
   );
 }

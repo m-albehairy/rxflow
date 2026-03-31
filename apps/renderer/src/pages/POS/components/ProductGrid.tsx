@@ -4,7 +4,7 @@ import {
   Image,
 } from 'antd';
 import {
-  SearchOutlined, AppstoreOutlined, UnorderedListOutlined, ShoppingCartOutlined,
+  SearchOutlined, MedicineBoxOutlined,
   ScanOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
@@ -38,8 +38,8 @@ const CATEGORIES = [
 export function ProductGrid({ searchText, onSearchChange, onAddProduct }: Props) {
   const { t } = useTranslation('pos');
   const language = useUIStore((s) => s.language);
-  const posViewMode = useUIStore((s) => (s as any).posViewMode) || 'grid';
-  const setPosViewMode = useUIStore((s) => (s as any).setPosViewMode);
+  const posViewMode = useUIStore((s) => s.posViewMode);
+  const posGridColumns = useUIStore((s) => s.posGridColumns);
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>('all');
@@ -84,7 +84,7 @@ export function ProductGrid({ searchText, onSearchChange, onAddProduct }: Props)
       width: 50,
       render: (_: any, product: any) => product.imageUrl
         ? <Image src={product.imageUrl} width={40} height={40} style={{ objectFit: 'cover', borderRadius: 4 }} preview={false} />
-        : <ShoppingCartOutlined style={{ fontSize: 24, color: '#ccc' }} />,
+        : <MedicineBoxOutlined style={{ fontSize: 24, color: 'var(--app-color-text-tertiary)' }} />,
     },
     {
       title: t('product') || 'Product',
@@ -150,24 +150,6 @@ export function ProductGrid({ searchText, onSearchChange, onAddProduct }: Props)
         style={{ marginBottom: 8 }}
       />
 
-      {/* View Toggle */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
-        <Space size={4}>
-          <Button
-            size="small"
-            type={posViewMode === 'grid' ? 'primary' : 'default'}
-            icon={<AppstoreOutlined />}
-            onClick={() => setPosViewMode?.('grid')}
-          />
-          <Button
-            size="small"
-            type={posViewMode === 'list' ? 'primary' : 'default'}
-            icon={<UnorderedListOutlined />}
-            onClick={() => setPosViewMode?.('list')}
-          />
-        </Space>
-      </div>
-
       <Spin spinning={loading}>
         {products.length === 0 ? (
           <Empty description={t('searchProduct')} />
@@ -189,7 +171,7 @@ export function ProductGrid({ searchText, onSearchChange, onAddProduct }: Props)
               const stock = getStock(product);
               const outOfStock = stock <= 0;
               return (
-                <Col xs={8} sm={6} md={4} key={product.id}>
+                <Col span={Math.floor(24 / posGridColumns)} key={product.id}>
                   <Badge.Ribbon
                     text={outOfStock ? t('outOfStock') : undefined}
                     color={outOfStock ? 'red' : 'transparent'}
@@ -204,10 +186,14 @@ export function ProductGrid({ searchText, onSearchChange, onAddProduct }: Props)
                         opacity: outOfStock ? 0.5 : 1,
                         cursor: outOfStock ? 'not-allowed' : 'pointer',
                         position: 'relative',
+                        borderRadius: 10,
+                        border: '1px solid var(--app-color-border)',
+                        overflow: 'hidden',
                       }}
+                      styles={{ body: { padding: '10px 8px' } }}
                       cover={
                         product.imageUrl ? (
-                          <div style={{ height: 80, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <div style={{ height: 80, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--app-color-bg-layout)' }}>
                             <img
                               src={product.imageUrl}
                               alt=""
@@ -215,29 +201,31 @@ export function ProductGrid({ searchText, onSearchChange, onAddProduct }: Props)
                             />
                           </div>
                         ) : (
-                          <div style={{ height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <ShoppingCartOutlined style={{ fontSize: 28, color: '#ccc' }} />
+                          <div style={{
+                            height: 56,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            background: 'var(--app-color-bg-layout)',
+                          }}>
+                            <MedicineBoxOutlined style={{ fontSize: 26, color: 'var(--app-color-primary)', opacity: 0.45 }} />
                           </div>
                         )
                       }
                     >
                       {/* Stock badge */}
                       <Tag
-                        color={outOfStock ? 'red' : 'green'}
-                        style={{ position: 'absolute', top: 4, right: 4, fontSize: 11, margin: 0 }}
+                        color={outOfStock ? 'red' : 'blue'}
+                        style={{ position: 'absolute', top: 4, insetInlineEnd: 4, fontSize: 10, margin: 0, lineHeight: '18px', padding: '0 5px' }}
                       >
                         {stock.toFixed(0)}
                       </Tag>
 
-                      <Text strong ellipsis style={{ fontSize: 12, display: 'block' }}>
+                      <Text strong ellipsis style={{ fontSize: 12, display: 'block', color: 'var(--app-color-text)' }}>
                         {language === 'ar' ? product.nameAr : product.nameEn}
                       </Text>
-                      <Text type="success" style={{ fontSize: 14, fontWeight: 600 }}>
+                      <Text style={{ fontSize: 13, fontWeight: 700, color: 'var(--app-color-primary)' }}>
                         SAR {parseFloat(product.defaultSellingPrice).toFixed(2)}
-                      </Text>
-                      <br />
-                      <Text type="secondary" style={{ fontSize: 10 }}>
-                        {product.barcode ? `DMS-SKU-${product.barcode.slice(-3)}` : ''}
                       </Text>
                     </Card>
                   </Badge.Ribbon>

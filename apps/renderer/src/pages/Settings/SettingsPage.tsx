@@ -3,11 +3,15 @@ import {
   Tabs, Form, Input, InputNumber, Switch, Select, Button, App, Card, Typography,
   Row, Col, Space, Affix,
 } from 'antd';
-import { SettingOutlined, DollarOutlined, BgColorsOutlined, SaveOutlined } from '@ant-design/icons';
+import {
+  SettingOutlined, DollarOutlined, BgColorsOutlined, SaveOutlined,
+  ShoppingOutlined, AppstoreOutlined, UnorderedListOutlined,
+} from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { settingsApi } from '@/api/settings.api';
 import { useSettings } from '@/hooks/useSettings';
 import { ThemeCustomizer } from '@/components/common/ThemeCustomizer';
+import { useUIStore } from '@/store/ui.store';
 
 const { Title, Text } = Typography;
 
@@ -167,6 +171,13 @@ export function SettingsPage() {
       ),
     },
     {
+      key: 'pos',
+      label: (
+        <span><ShoppingOutlined style={{ marginInlineEnd: 6 }} />{t('pos')}</span>
+      ),
+      children: <POSSettings cardStyle={cardStyle} />,
+    },
+    {
       key: 'theme',
       label: (
         <span><BgColorsOutlined style={{ marginInlineEnd: 6 }} />{t('theme')}</span>
@@ -207,5 +218,63 @@ export function SettingsPage() {
         <Tabs items={tabItems} />
       </Form>
     </div>
+  );
+}
+
+function POSSettings({ cardStyle }: { cardStyle: React.CSSProperties }) {
+  const { t } = useTranslation('settings');
+  const posViewMode = useUIStore((s) => s.posViewMode);
+  const setPosViewMode = useUIStore((s) => s.setPosViewMode);
+  const posGridColumns = useUIStore((s) => s.posGridColumns);
+  const setPosGridColumns = useUIStore((s) => s.setPosGridColumns);
+
+  return (
+    <Card style={cardStyle}>
+      <Row gutter={24}>
+        <Col xs={24} md={12}>
+          <div style={{ marginBottom: 28 }}>
+            <FieldLabel label={t('posViewMode')} description={t('posViewModeDesc')} />
+            <div style={{ marginTop: 8 }}>
+              <Space size={8}>
+                <Button
+                  type={posViewMode === 'grid' ? 'primary' : 'default'}
+                  icon={<AppstoreOutlined />}
+                  onClick={() => setPosViewMode('grid')}
+                >
+                  {t('grid')}
+                </Button>
+                <Button
+                  type={posViewMode === 'list' ? 'primary' : 'default'}
+                  icon={<UnorderedListOutlined />}
+                  onClick={() => setPosViewMode('list')}
+                >
+                  {t('list')}
+                </Button>
+              </Space>
+            </div>
+          </div>
+        </Col>
+        <Col xs={24} md={12}>
+          <div style={{ marginBottom: 28 }}>
+            <FieldLabel label={t('productsPerRow')} description={t('productsPerRowDesc')} />
+            <div style={{ marginTop: 8 }}>
+              <Select
+                value={posGridColumns}
+                onChange={(val) => setPosGridColumns(val)}
+                disabled={posViewMode === 'list'}
+                style={{ width: 200 }}
+                options={[
+                  { label: '3', value: 3 },
+                  { label: '4', value: 4 },
+                  { label: '5', value: 5 },
+                  { label: '6', value: 6 },
+                  { label: '8', value: 8 },
+                ]}
+              />
+            </div>
+          </div>
+        </Col>
+      </Row>
+    </Card>
   );
 }

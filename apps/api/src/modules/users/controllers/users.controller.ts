@@ -3,7 +3,8 @@ import { UsersService } from '../services/users.service';
 import { RequirePermission } from '../../../common/decorators/permission.decorator';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import { AuthenticatedUser } from '../../../common/interfaces/request.interface';
-import { PaginationDto } from '../../../common/dto/pagination.dto';
+import { FilterUsersDto } from '../dto/filter-users.dto';
+import { ResetPasswordDto } from '../dto/reset-password.dto';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { UpdatePinDto } from '../dto/update-pin.dto';
@@ -15,8 +16,8 @@ export class UsersController {
 
   @Get()
   @RequirePermission('users:manage')
-  async findAll(@Query() pagination: PaginationDto) {
-    return this.usersService.findAll(pagination);
+  async findAll(@Query() filter: FilterUsersDto) {
+    return this.usersService.findAll(filter);
   }
 
   @Get(':id')
@@ -36,10 +37,16 @@ export class UsersController {
     return this.usersService.update(id, dto);
   }
 
+  @Post(':id/reset-password')
+  @RequirePermission('users:manage')
+  async resetPassword(@Param('id') id: string, @Body() dto: ResetPasswordDto) {
+    return this.usersService.resetPassword(id, dto.newPassword);
+  }
+
   @Delete(':id')
   @RequirePermission('users:manage')
-  async remove(@Param('id') id: string) {
-    return this.usersService.softDelete(id);
+  async remove(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.usersService.softDelete(id, user.id);
   }
 
   @Patch(':id/pin')

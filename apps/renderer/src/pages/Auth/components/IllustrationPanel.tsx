@@ -1,10 +1,7 @@
 import React, { memo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { PharmaSvgIllustration } from './PharmaSvgIllustration';
 import type { LoginColorScheme } from './LoginTheme';
-import { DesertSky } from './EgyptianScene/DesertSky';
-import { Pyramids } from './EgyptianScene/Pyramids';
-import { NileRiver } from './EgyptianScene/NileRiver';
-import { LotusFlowers } from './EgyptianScene/LotusFlowers';
 
 interface Props {
   colors: LoginColorScheme;
@@ -16,32 +13,21 @@ export const IllustrationPanel = memo(function IllustrationPanel({ colors }: Pro
   return (
     <div
       style={{
-        flex: '0 0 45%',
+        flex: 1,
         position: 'relative',
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        background: colors.nightSky,
+        background: `linear-gradient(160deg, ${colors.nightSky} 0%, ${colors.nightSkyBottom} 100%)`,
       }}
     >
-      {/* Scene SVG */}
-      <svg
-        viewBox="0 0 500 400"
-        preserveAspectRatio="xMidYMid slice"
-        style={{
-          position: 'absolute',
-          inset: 0,
-          width: '100%',
-          height: '100%',
-        }}
-      >
-        <DesertSky colors={colors} />
-        <Pyramids colors={colors} />
-        <NileRiver colors={colors} />
-        <LotusFlowers colors={colors} />
-      </svg>
+      {/* Pharmaceutical SVG Illustration */}
+      <PharmaSvgIllustration
+        capsuleColors={[colors.deepTeal, colors.nileTeal]}
+        liquidTint={`rgba(245, 158, 11, 0.25)`}
+      />
 
       {/* Branding overlay */}
       <div

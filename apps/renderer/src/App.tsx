@@ -23,6 +23,7 @@ import { ShiftReportPage } from '@/pages/Reports/ShiftReportPage';
 import { SettingsPage } from '@/pages/Settings/SettingsPage';
 import { ProfilePage } from '@/pages/Profile/ProfilePage';
 import { LoginPage } from '@/pages/Auth/LoginPage';
+import { UserManagementPage } from '@/pages/Users/UserManagementPage';
 
 function App() {
   const language = useUIStore((s) => s.language);
@@ -53,6 +54,7 @@ function App() {
               <Route path="reports/ar" element={<ARReportPage />} />
               <Route path="reports/shifts" element={<ShiftReportPage />} />
               <Route path="settings" element={<SettingsPage />} />
+              <Route path="users" element={<UserManagementPage />} />
               <Route path="profile" element={<ProfilePage />} />
             </Route>
           </Routes>

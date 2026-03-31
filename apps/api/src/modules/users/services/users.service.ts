@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, IsNull } from 'typeorm';
 import { User } from '../../../database/entities/user.entity';
@@ -6,7 +6,7 @@ import { UserPreference } from '../../../database/entities/user-preference.entit
 import { AuthService } from '../../auth/services/auth.service';
 import { ErrorMessages } from '../../../common/constants/error-messages';
 import { DEFAULT_PAGE, DEFAULT_LIMIT, MAX_LIMIT } from '@pharmapos/shared';
-import { PaginationDto } from '../../../common/dto/pagination.dto';
+import { FilterUsersDto } from '../dto/filter-users.dto';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { UpdatePreferencesDto } from '../dto/update-preferences.dto';
@@ -20,18 +20,39 @@ export class UsersService {
     private authService: AuthService,
   ) {}
 
-  async findAll(pagination: PaginationDto) {
-    const page = Math.max(pagination.page || DEFAULT_PAGE, 1);
-    const limit = Math.min(Math.max(pagination.limit || DEFAULT_LIMIT, 1), MAX_LIMIT);
+  async findAll(filter: FilterUsersDto) {
+    const page = Math.max(filter.page || DEFAULT_PAGE, 1);
+    const limit = Math.min(Math.max(filter.limit || DEFAULT_LIMIT, 1), MAX_LIMIT);
 
-    const [data, total] = await this.userRepo.findAndCount({
-      where: { deletedAt: IsNull() },
-      relations: ['role'],
-      select: ['id', 'username', 'fullName', 'fullNameAr', 'isActive', 'roleId', 'lastLoginAt', 'createdAt'],
-      skip: (page - 1) * limit,
-      take: limit,
-    });
+    const qb = this.userRepo.createQueryBuilder('u')
+      .leftJoinAndSelect('u.role', 'role')
+      .where('u.deletedAt IS NULL');
 
+    if (filter.search) {
+      qb.andWhere(
+        '(u.fullName ILIKE :search OR u.fullNameAr ILIKE :search OR u.username ILIKE :search)',
+        { search: `%${filter.search}%` },
+      );
+    }
+
+    if (filter.active !== undefined) {
+      qb.andWhere('u.isActive = :active', { active: filter.active });
+    }
+
+    if (filter.roleId) {
+      qb.andWhere('u.roleId = :roleId', { roleId: filter.roleId });
+    }
+
+    qb.select([
+      'u.id', 'u.username', 'u.fullName', 'u.fullNameAr',
+      'u.isActive', 'u.roleId', 'u.lastLoginAt', 'u.createdAt', 'u.version',
+      'role.id', 'role.name', 'role.nameAr',
+    ])
+    .orderBy('u.createdAt', 'DESC')
+    .skip((page - 1) * limit)
+    .take(limit);
+
+    const [data, total] = await qb.getManyAndCount();
     return { data, meta: { page, limit, total, totalPages: Math.ceil(total / limit) } };
   }
 
@@ -39,7 +60,7 @@ export class UsersService {
     const user = await this.userRepo.findOne({
       where: { id, deletedAt: IsNull() },
       relations: ['role', 'preferences'],
-      select: ['id', 'username', 'fullName', 'fullNameAr', 'isActive', 'roleId', 'lastLoginAt', 'createdAt'],
+      select: ['id', 'username', 'fullName', 'fullNameAr', 'isActive', 'roleId', 'lastLoginAt', 'createdAt', 'version'],
     });
     if (!user) throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
     return user;
@@ -83,7 +104,14 @@ export class UsersService {
     return this.userRepo.save(user);
   }
 
-  async softDelete(id: string): Promise<void> {
+  async resetPassword(id: string, newPassword: string): Promise<void> {
+    const user = await this.findById(id);
+    user.passwordHash = await this.authService.hashPassword(newPassword);
+    await this.userRepo.save(user);
+  }
+
+  async softDelete(id: string, currentUserId: string): Promise<void> {
+    if (id === currentUserId) throw new BadRequestException(ErrorMessages.CANNOT_DELETE_SELF);
     await this.userRepo.softDelete(id);
   }
 

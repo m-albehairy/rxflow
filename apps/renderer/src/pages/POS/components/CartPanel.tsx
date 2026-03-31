@@ -57,7 +57,7 @@ export function CartPanel({ onCheckout, onHold, onOpenShift, isShiftOpen }: Prop
         <Space>
           <ShoppingCartOutlined />
           {t('currentOrder')}
-          <Badge count={items.length} style={{ backgroundColor: '#52c41a' }} />
+          <Badge count={items.length} style={{ backgroundColor: 'var(--app-color-primary)' }} />
         </Space>
       }
       extra={
@@ -120,25 +120,25 @@ export function CartPanel({ onCheckout, onHold, onOpenShift, isShiftOpen }: Prop
         {/* Discount */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
           <Text style={{ fontSize: 13 }}>{t('discountPercent')}:</Text>
-          <InputNumber
-            size="small"
-            min={0}
-            value={parseFloat(activeTab.discountPct)}
-            onChange={(val) => setDiscountPct(String(val || 0))}
-            addonAfter={
-              <Select
-                size="small"
-                value={activeTab.discountType || 'PERCENTAGE'}
-                onChange={(val) => useCartStore.getState().setDiscountType(val as 'PERCENTAGE' | 'FIXED')}
-                style={{ width: 80 }}
-                options={[
-                  { label: '%', value: 'PERCENTAGE' },
-                  { label: currency, value: 'FIXED' },
-                ]}
-              />
-            }
-            style={{ width: 180 }}
-          />
+          <Space.Compact size="small" style={{ width: 180 }}>
+            <InputNumber
+              size="small"
+              min={0}
+              value={parseFloat(activeTab.discountPct)}
+              onChange={(val) => setDiscountPct(String(val || 0))}
+              style={{ flex: 1 }}
+            />
+            <Select
+              size="small"
+              value={activeTab.discountType || 'PERCENTAGE'}
+              onChange={(val) => useCartStore.getState().setDiscountType(val as 'PERCENTAGE' | 'FIXED')}
+              style={{ width: 80 }}
+              options={[
+                { label: '%', value: 'PERCENTAGE' },
+                { label: currency, value: 'FIXED' },
+              ]}
+            />
+          </Space.Compact>
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -153,8 +153,8 @@ export function CartPanel({ onCheckout, onHold, onOpenShift, isShiftOpen }: Prop
         <Divider style={{ margin: '6px 0' }} />
 
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Title level={4} style={{ margin: 0, color: '#52c41a' }}>{t('grandTotal')}:</Title>
-          <Title level={4} style={{ margin: 0, color: '#52c41a' }}>{currency} {total.toFixed(2)}</Title>
+          <Title level={4} style={{ margin: 0, color: 'var(--app-color-primary)' }}>{t('grandTotal')}:</Title>
+          <Title level={4} style={{ margin: 0, color: 'var(--app-color-primary)' }}>{currency} {total.toFixed(2)}</Title>
         </div>
       </div>
 
@@ -200,7 +200,7 @@ export function CartPanel({ onCheckout, onHold, onOpenShift, isShiftOpen }: Prop
             />
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
               <Text type="secondary" style={{ fontSize: 12 }}>{t('change')}:</Text>
-              <Text style={{ color: '#52c41a', fontSize: 12, fontWeight: 600 }}>
+              <Text style={{ color: 'var(--app-color-success)', fontSize: 12, fontWeight: 600 }}>
                 {currency} {change.toFixed(2)}
               </Text>
             </div>
@@ -230,7 +230,7 @@ export function CartPanel({ onCheckout, onHold, onOpenShift, isShiftOpen }: Prop
             block
             onClick={onCheckout}
             disabled={items.length === 0}
-            style={{ background: '#52c41a', flex: 2 }}
+            style={{ flex: 2 }}
           >
             {t('charge')} {currency} {total.toFixed(2)}
           </Button>

@@ -16,5 +16,12 @@
   "printerType": "نوع الطابعة",
   "paperWidth": "عرض الورق",
   "backupNow": "نسخ احتياطي الآن",
-  "restoreBackup": "استعادة نسخة احتياطية"
+  "restoreBackup": "استعادة نسخة احتياطية",
+  "pos": "نقطة البيع",
+  "posViewMode": "طريقة عرض المنتجات",
+  "posViewModeDesc": "اختر طريقة عرض المنتجات في شاشة نقطة البيع",
+  "grid": "شبكة",
+  "list": "قائمة",
+  "productsPerRow": "عدد المنتجات في الصف",
+  "productsPerRowDesc": "عدد أعمدة المنتجات المعروضة في وضع الشبكة"
 }

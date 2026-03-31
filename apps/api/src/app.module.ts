@@ -21,6 +21,7 @@ import { AuditModule } from './modules/audit/audit.module';
 import { ShiftsModule } from './modules/shifts/shifts.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { SharedModule } from './shared/shared.module';
+import { HealthModule } from './modules/health/health.module';
 import { JwtAuthGuard } from './common/guards/jwt.guard';
 import { PermissionsGuard } from './common/guards/permissions.guard';
 
@@ -29,6 +30,7 @@ import { PermissionsGuard } from './common/guards/permissions.guard';
     ConfigModule.forRoot({ isGlobal: true, load: [databaseConfig, jwtConfig] }),
     DatabaseModule,
     SharedModule,
+    HealthModule,
     AuthModule,
     SetupModule,
     SettingsModule,

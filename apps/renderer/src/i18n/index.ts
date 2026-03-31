@@ -12,6 +12,7 @@ import settingsEn from './locales/en/settings.json';
 import profileEn from './locales/en/profile.json';
 import wizardEn from './locales/en/wizard.json';
 import errorsEn from './locales/en/errors.json';
+import usersEn from './locales/en/users.json';
 
 import commonAr from './locales/ar/common.json';
 import posAr from './locales/ar/pos.json';
@@ -24,6 +25,7 @@ import settingsAr from './locales/ar/settings.json';
 import profileAr from './locales/ar/profile.json';
 import wizardAr from './locales/ar/wizard.json';
 import errorsAr from './locales/ar/errors.json';
+import usersAr from './locales/ar/users.json';
 
 i18n.use(initReactI18next).init({
   resources: {
@@ -39,6 +41,7 @@ i18n.use(initReactI18next).init({
       profile: profileEn,
       wizard: wizardEn,
       errors: errorsEn,
+      users: usersEn,
     },
     ar: {
       common: commonAr,
@@ -52,9 +55,10 @@ i18n.use(initReactI18next).init({
       profile: profileAr,
       wizard: wizardAr,
       errors: errorsAr,
+      users: usersAr,
     },
   },
-  lng: 'en',
+  lng: 'ar',
   fallbackLng: 'en',
   defaultNS: 'common',
   interpolation: { escapeValue: false },

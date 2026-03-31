@@ -16,5 +16,12 @@
   "printerType": "Printer Type",
   "paperWidth": "Paper Width",
   "backupNow": "Backup Now",
-  "restoreBackup": "Restore Backup"
+  "restoreBackup": "Restore Backup",
+  "pos": "Point of Sale",
+  "posViewMode": "Product View Mode",
+  "posViewModeDesc": "Choose how products are displayed on the POS screen",
+  "grid": "Grid",
+  "list": "List",
+  "productsPerRow": "Products Per Row",
+  "productsPerRowDesc": "Number of product columns displayed in grid view"
 }

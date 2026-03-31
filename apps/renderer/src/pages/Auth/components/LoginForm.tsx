@@ -76,11 +76,13 @@ export function LoginForm({ onFinish, loading, animationControls, colors }: Prop
           style={{
             height: 46,
             borderRadius: 8,
-            background: colors.gold,
+            background: `linear-gradient(135deg, ${colors.gold}, ${colors.goldLight})`,
             borderColor: colors.gold,
             fontWeight: 600,
             fontSize: 16,
             letterSpacing: 0.5,
+            boxShadow: `0 2px 8px rgba(245, 158, 11, 0.3)`,
+            color: '#0F172A',
           }}
         >
           {t('loginButton')}

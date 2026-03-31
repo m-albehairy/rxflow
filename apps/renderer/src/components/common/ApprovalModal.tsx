@@ -42,7 +42,7 @@ export function ApprovalModal({ open, title, message, onApproved, onCancel }: Pr
       onOk={handleSubmit}
       onCancel={onCancel}
       confirmLoading={loading}
-      destroyOnClose
+      destroyOnHidden
     >
       {message && <Text>{message}</Text>}
       {error && <Alert type="error" message={error} style={{ marginBottom: 16 }} />}

@@ -88,8 +88,11 @@ export function POSPage() {
         marginBottom: 4,
       }}>
         <Space size="small">
-          <Button type="primary" style={{ background: '#52c41a' }} icon={<DollarOutlined />}>
+          <Button type="primary" style={{ boxShadow: 'none' }} icon={<DollarOutlined />}>
             {t('cashIn')}
+          </Button>
+          <Button type="primary" danger style={{ boxShadow: 'none' }} icon={<DollarOutlined />}>
+            {t('cashOut')}
           </Button>
           <Button icon={<RollbackOutlined />}>{t('refund')}</Button>
           <Button icon={<SwapOutlined />} onClick={() => setExchangeOpen(true)}>
@@ -109,7 +112,7 @@ export function POSPage() {
           )}
           <Button
             type="primary"
-            style={{ background: '#52c41a' }}
+            style={{ boxShadow: 'none' }}
             icon={<MergeCellsOutlined />}
             disabled={tabs.length < 2}
             onClick={() => setMergeOpen(true)}

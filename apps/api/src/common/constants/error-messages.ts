@@ -10,6 +10,12 @@ export const ErrorMessages = {
   USER_NOT_FOUND: 'users.notFound',
   USER_ALREADY_EXISTS: 'users.alreadyExists',
   USER_INACTIVE: 'users.inactive',
+  CANNOT_DELETE_SELF: 'users.cannotDeleteSelf',
+
+  // Roles
+  ROLE_NOT_FOUND: 'roles.notFound',
+  ROLE_HAS_USERS: 'roles.hasUsers',
+  ROLE_IS_SYSTEM: 'roles.isSystem',
 
   // Products
   PRODUCT_NOT_FOUND: 'products.notFound',

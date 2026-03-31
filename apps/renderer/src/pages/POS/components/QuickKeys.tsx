@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Button, Space, Modal, Input, List, Typography, Empty, App } from 'antd';
+import React, { useState } from 'react';
+import { Button, Modal, Input, List, Typography, Empty } from 'antd';
 import { PlusOutlined, DeleteOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { productsApi } from '@/api/products.api';
@@ -8,6 +8,7 @@ import { useUIStore } from '@/store/ui.store';
 const { Text } = Typography;
 
 const STORAGE_KEY = 'pharmapos-quick-keys';
+const MAX_QUICK_KEYS = 5;
 
 interface QuickKeyItem {
   productId: string;
@@ -37,11 +38,12 @@ export function QuickKeys({ onAddProduct }: Props) {
   const { t } = useTranslation('pos');
   const language = useUIStore((s) => s.language);
   const [keys, setKeys] = useState<QuickKeyItem[]>(loadQuickKeys);
-  const [configOpen, setConfigOpen] = useState(false);
+  const [selectOpen, setSelectOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [results, setResults] = useState<any[]>([]);
 
   const handleAdd = (product: any) => {
+    if (keys.length >= MAX_QUICK_KEYS) return;
     const newKey: QuickKeyItem = {
       productId: product.id,
       barcode: product.barcode,
@@ -71,24 +73,25 @@ export function QuickKeys({ onAddProduct }: Props) {
     }
   };
 
-  if (keys.length === 0 && !configOpen) {
-    return (
-      <Button
-        type="dashed"
-        size="small"
-        icon={<PlusOutlined />}
-        onClick={() => setConfigOpen(true)}
-        style={{ marginBottom: 8 }}
-      >
-        {t('quickKey')}
-      </Button>
-    );
-  }
+  const closeModal = () => {
+    setSelectOpen(false);
+    setSearch('');
+    setResults([]);
+  };
+
+  const atMax = keys.length >= MAX_QUICK_KEYS;
 
   return (
     <>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8, alignItems: 'center' }}>
-        <Text style={{ fontSize: 12, color: '#999' }}>+ {t('quickKey')}</Text>
+        <Button
+          type="dashed"
+          size="small"
+          icon={<PlusOutlined />}
+          onClick={() => setSelectOpen(true)}
+        >
+          {t('quickKey')}
+        </Button>
         {keys.map((key) => (
           <Button
             key={key.productId}
@@ -101,18 +104,12 @@ export function QuickKeys({ onAddProduct }: Props) {
             {language === 'ar' ? key.nameAr : key.nameEn}
           </Button>
         ))}
-        <Button
-          size="small"
-          type="dashed"
-          icon={<PlusOutlined />}
-          onClick={() => setConfigOpen(true)}
-        />
       </div>
 
       <Modal
-        open={configOpen}
-        title={t('configureQuickKeys')}
-        onCancel={() => { setConfigOpen(false); setSearch(''); setResults([]); }}
+        open={selectOpen}
+        title={`${t('configureQuickKeys')} (${keys.length}/${MAX_QUICK_KEYS})`}
+        onCancel={closeModal}
         footer={null}
         width={500}
       >
@@ -121,56 +118,65 @@ export function QuickKeys({ onAddProduct }: Props) {
           value={search}
           onChange={(e) => handleSearch(e.target.value)}
           allowClear
+          disabled={atMax && keys.length > 0}
           style={{ marginBottom: 12 }}
+          autoFocus
         />
 
         {results.length > 0 && (
           <List
             size="small"
             dataSource={results}
-            renderItem={(p: any) => (
-              <List.Item
-                actions={[
-                  <Button
-                    size="small"
-                    type="primary"
-                    icon={<PlusOutlined />}
-                    disabled={keys.some((k) => k.productId === p.id)}
-                    onClick={() => handleAdd(p)}
-                  >
-                    {t('add') || 'Add'}
-                  </Button>,
-                ]}
-              >
-                <Text>{language === 'ar' ? p.nameAr : p.nameEn}</Text>
-              </List.Item>
-            )}
+            renderItem={(p: any) => {
+              const alreadyAdded = keys.some((k) => k.productId === p.id);
+              return (
+                <List.Item
+                  actions={[
+                    <Button
+                      size="small"
+                      type="primary"
+                      icon={<PlusOutlined />}
+                      disabled={alreadyAdded || atMax}
+                      onClick={() => handleAdd(p)}
+                    >
+                      {alreadyAdded ? t('added') || 'Added' : t('add') || 'Add'}
+                    </Button>,
+                  ]}
+                >
+                  <Text>{language === 'ar' ? p.nameAr : p.nameEn}</Text>
+                </List.Item>
+              );
+            }}
             style={{ marginBottom: 16 }}
           />
         )}
 
-        <Text strong style={{ display: 'block', marginBottom: 8 }}>{t('quickKey')}:</Text>
-        {keys.length === 0 ? (
-          <Empty description="No quick keys configured" image={Empty.PRESENTED_IMAGE_SIMPLE} />
-        ) : (
-          <List
-            size="small"
-            dataSource={keys}
-            renderItem={(key) => (
-              <List.Item
-                actions={[
-                  <Button
-                    size="small"
-                    danger
-                    icon={<DeleteOutlined />}
-                    onClick={() => handleRemove(key.productId)}
-                  />,
-                ]}
-              >
-                <Text>{language === 'ar' ? key.nameAr : key.nameEn}</Text>
-              </List.Item>
-            )}
-          />
+        {keys.length > 0 && (
+          <>
+            <Text strong style={{ display: 'block', marginBottom: 8 }}>{t('quickKey')}:</Text>
+            <List
+              size="small"
+              dataSource={keys}
+              renderItem={(key) => (
+                <List.Item
+                  actions={[
+                    <Button
+                      size="small"
+                      danger
+                      icon={<DeleteOutlined />}
+                      onClick={() => handleRemove(key.productId)}
+                    />,
+                  ]}
+                >
+                  <Text>{language === 'ar' ? key.nameAr : key.nameEn}</Text>
+                </List.Item>
+              )}
+            />
+          </>
+        )}
+
+        {keys.length === 0 && results.length === 0 && (
+          <Empty description={t('searchProduct')} image={Empty.PRESENTED_IMAGE_SIMPLE} />
         )}
       </Modal>
     </>
