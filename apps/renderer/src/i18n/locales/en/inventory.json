@@ -1,0 +1,18 @@
+{
+  "title": "Inventory",
+  "currentStock": "Current Stock",
+  "avgCost": "Average Cost",
+  "totalValue": "Total Value",
+  "reorderLevel": "Reorder Level",
+  "lowStock": "Low Stock",
+  "nearExpiry": "Near Expiry",
+  "expired": "Expired",
+  "adjustStock": "Adjust Stock",
+  "stockTake": "Stock Take",
+  "batchNumber": "Batch Number",
+  "expiryDate": "Expiry Date",
+  "remaining": "Remaining",
+  "adjustmentReason": "Reason",
+  "addStock": "Add Stock",
+  "removeStock": "Remove Stock"
+}

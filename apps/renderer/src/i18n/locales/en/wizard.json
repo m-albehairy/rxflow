@@ -1,0 +1,18 @@
+{
+  "title": "Setup Wizard",
+  "welcome": "Welcome to PharmaPOS",
+  "step1": "Pharmacy Information",
+  "step2": "Costing Method",
+  "step3": "Pricing Strategy",
+  "step4": "Credit Sales",
+  "step5": "Rules & Permissions",
+  "step6": "Hardware Setup",
+  "step7": "Create Admin User",
+  "next": "Next",
+  "previous": "Previous",
+  "finish": "Finish Setup",
+  "wacExplain": "Weighted Average Cost calculates a running average cost across all purchase batches. This cannot be changed after setup.",
+  "pricingFixed": "Sell at product's fixed price",
+  "pricingCostPlus": "Auto-calculate from cost + margin",
+  "pricingHybrid": "Suggested price, fully editable (recommended)"
+}

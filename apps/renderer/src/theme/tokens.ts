@@ -1,0 +1,46 @@
+export const lightTokens = {
+  colorPrimary: '#4F46E5',
+  colorBgContainer: '#FFFFFF',
+  colorBgLayout: '#F1F5F9',
+  colorBgElevated: '#FFFFFF',
+  colorBorder: '#E2E8F0',
+  colorText: '#0F172A',
+  colorTextSecondary: '#64748B',
+  colorTextTertiary: '#94A3B8',
+  colorTextQuaternary: '#CBD5E1',
+  colorSuccess: '#52c41a',
+  colorWarning: '#faad14',
+  colorError: '#ff4d4f',
+  colorInfo: '#1677ff',
+  borderRadius: 8,
+  boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px 0 rgba(0, 0, 0, 0.02)',
+  fontFamily: '"IBM Plex Sans", "IBM Plex Sans Arabic", sans-serif',
+};
+
+export const darkTokens = {
+  colorPrimary: '#818CF8',
+  colorBgContainer: '#1E293B',
+  colorBgLayout: '#0F172A',
+  colorBgElevated: '#263450',
+  colorBorder: '#334155',
+  colorText: '#F1F5F9',
+  colorTextSecondary: '#94A3B8',
+  colorTextTertiary: '#64748B',
+  colorTextQuaternary: '#475569',
+  colorSuccess: '#49aa19',
+  colorWarning: '#d89614',
+  colorError: '#dc4446',
+  colorInfo: '#1668dc',
+  borderRadius: 8,
+  boxShadow: 'none',
+  fontFamily: '"IBM Plex Sans", "IBM Plex Sans Arabic", sans-serif',
+};
+
+export const presets: Record<string, { light: string; dark: string }> = {
+  default: { light: '#4F46E5', dark: '#818CF8' },
+  ocean: { light: '#0284C7', dark: '#38BDF8' },
+  forest: { light: '#059669', dark: '#34D399' },
+  sunset: { light: '#EA580C', dark: '#FB923C' },
+  rose: { light: '#E11D48', dark: '#FB7185' },
+  corporate: { light: '#1D4ED8', dark: '#60A5FA' },
+};

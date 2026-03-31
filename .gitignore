@@ -1,0 +1,13 @@
+node_modules/
+dist/
+release/
+.turbo/
+coverage/
+*.pgdump
+.env
+.env.local
+.env.*.local
+backups/
+*.log
+.DS_Store
+.claude/

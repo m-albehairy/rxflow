@@ -1,0 +1,18 @@
+{
+  "title": "المخزون",
+  "currentStock": "المخزون الحالي",
+  "avgCost": "متوسط التكلفة",
+  "totalValue": "القيمة الإجمالية",
+  "reorderLevel": "حد إعادة الطلب",
+  "lowStock": "مخزون منخفض",
+  "nearExpiry": "قريب الانتهاء",
+  "expired": "منتهي الصلاحية",
+  "adjustStock": "تعديل المخزون",
+  "stockTake": "جرد المخزون",
+  "batchNumber": "رقم الدفعة",
+  "expiryDate": "تاريخ الانتهاء",
+  "remaining": "المتبقي",
+  "adjustmentReason": "السبب",
+  "addStock": "إضافة مخزون",
+  "removeStock": "سحب مخزون"
+}

@@ -1,0 +1,17 @@
+{
+  "title": "المشتريات",
+  "newPurchase": "فاتورة شراء جديدة",
+  "supplier": "المورد",
+  "purchaseNumber": "رقم الفاتورة",
+  "invoiceDate": "تاريخ الفاتورة",
+  "refNumber": "رقم المرجع",
+  "totalCost": "إجمالي التكلفة",
+  "grandTotal": "المجموع الكلي",
+  "wacPreview": "معاينة متوسط التكلفة",
+  "oldQty": "الكمية السابقة",
+  "oldAvgCost": "التكلفة السابقة",
+  "newAvgCost": "التكلفة الجديدة",
+  "freeQty": "كمية مجانية",
+  "unitCost": "تكلفة الوحدة",
+  "voidPurchase": "إلغاء فاتورة الشراء"
+}

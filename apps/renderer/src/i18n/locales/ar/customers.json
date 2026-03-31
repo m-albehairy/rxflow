@@ -1,0 +1,16 @@
+{
+  "title": "العملاء",
+  "addCustomer": "إضافة عميل",
+  "phone": "الهاتف",
+  "email": "البريد الإلكتروني",
+  "nationalId": "رقم الهوية",
+  "dateOfBirth": "تاريخ الميلاد",
+  "loyaltyPoints": "نقاط الولاء",
+  "totalPurchases": "إجمالي المشتريات",
+  "creditAccount": "حساب الآجل",
+  "creditLimit": "حد الائتمان",
+  "currentBalance": "الرصيد الحالي",
+  "collectPayment": "تحصيل دفعة",
+  "ledger": "كشف حساب",
+  "aging": "تقرير الأعمار"
+}

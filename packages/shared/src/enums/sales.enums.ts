@@ -1,0 +1,12 @@
+export enum DiscountType {
+  PERCENTAGE = 'PERCENTAGE',
+  FIXED = 'FIXED',
+}
+
+export enum RefundReason {
+  CUSTOMER_REQUEST = 'CUSTOMER_REQUEST',
+  DEFECTIVE = 'DEFECTIVE',
+  WRONG_ITEM = 'WRONG_ITEM',
+  EXPIRED = 'EXPIRED',
+  OTHER = 'OTHER',
+}

@@ -1,0 +1,14 @@
+export const VAT_SA = 15;
+export const VAT_EG = 14;
+export const VAT_AE = 5;
+export const MAX_CASHIER_DISCOUNT = 10;
+export const MAX_MANAGER_DISCOUNT = 100;
+export const WAC_DECIMAL_PLACES = 4;
+export const MONEY_DECIMAL_PLACES = 4;
+export const DISPLAY_DECIMAL_PLACES = 2;
+export const PERCENTAGE_DECIMAL_PLACES = 2;
+export const PIN_MIN_LENGTH = 4;
+export const PIN_MAX_LENGTH = 6;
+export const PASSWORD_MIN_LENGTH = 8;
+export const BCRYPT_COST_PASSWORD = 12;
+export const BCRYPT_COST_PIN = 10;

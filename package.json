@@ -1,0 +1,51 @@
+{
+  "name": "pharmapos",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "turbo run dev",
+    "dev:renderer": "turbo run dev --filter=@pharmapos/renderer",
+    "dev:api": "turbo run dev --filter=@pharmapos/api",
+    "dev:electron": "turbo run dev --filter=@pharmapos/desktop",
+    "build": "turbo run build",
+    "build:win": "turbo run build:win --filter=@pharmapos/desktop",
+    "build:mac": "turbo run build:mac --filter=@pharmapos/desktop",
+    "build:linux": "turbo run build:linux --filter=@pharmapos/desktop",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "type-check": "turbo run type-check",
+    "test": "turbo run test",
+    "test:api": "turbo run test --filter=@pharmapos/api",
+    "test:renderer": "turbo run test --filter=@pharmapos/renderer",
+    "test:e2e": "turbo run test:e2e",
+    "migration:generate": "turbo run migration:generate --filter=@pharmapos/api --",
+    "migration:run": "turbo run migration:run --filter=@pharmapos/api",
+    "migration:revert": "turbo run migration:revert --filter=@pharmapos/api",
+    "migration:revert:all": "turbo run migration:revert:all --filter=@pharmapos/api",
+    "db:drop": "turbo run db:drop --filter=@pharmapos/api",
+    "db:fresh": "turbo run db:fresh --filter=@pharmapos/api",
+    "seed": "turbo run seed --filter=@pharmapos/api",
+    "seed:egypt-pharmacy": "turbo run seed:egypt-pharmacy --filter=@pharmapos/api",
+    "clean": "turbo run clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.0",
+    "prettier": "^3.4.2",
+    "eslint": "^9.16.0",
+    "typescript": "^5.7.2",
+    "@typescript-eslint/eslint-plugin": "^8.18.0",
+    "@typescript-eslint/parser": "^8.18.0",
+    "eslint-config-prettier": "^9.1.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.2.10"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": ["prettier --write", "eslint --fix"],
+    "*.{json,md}": ["prettier --write"]
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.15.0"
+}

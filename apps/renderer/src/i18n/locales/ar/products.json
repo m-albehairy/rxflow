@@ -1,0 +1,20 @@
+{
+  "title": "المنتجات",
+  "addProduct": "إضافة منتج",
+  "editProduct": "تعديل منتج",
+  "barcode": "الباركود",
+  "category": "التصنيف",
+  "sellingPrice": "سعر البيع",
+  "minPrice": "الحد الأدنى للسعر",
+  "margin": "هامش الربح %",
+  "taxable": "خاضع للضريبة",
+  "trackExpiry": "تتبع الصلاحية",
+  "requirePrescription": "يتطلب وصفة طبية",
+  "unit": "الوحدة",
+  "unitsPerPack": "وحدات لكل عبوة",
+  "isService": "خدمة",
+  "genericName": "الاسم العلمي",
+  "bulkImport": "استيراد جماعي",
+  "bulkPriceUpdate": "تحديث أسعار جماعي",
+  "productHistory": "تاريخ المنتج"
+}

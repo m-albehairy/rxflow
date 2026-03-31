@@ -1,0 +1,55 @@
+import React from 'react';
+import { Card, InputNumber, Button, Typography, Space, Tag } from 'antd';
+import { DeleteOutlined, WarningOutlined } from '@ant-design/icons';
+import { useCartStore, CartItem as CartItemType } from '@/store/cart.store';
+import { useUIStore } from '@/store/ui.store';
+
+const { Text } = Typography;
+
+interface Props {
+  item: CartItemType;
+}
+
+export function CartItem({ item }: Props) {
+  const language = useUIStore((s) => s.language);
+  const updateQuantity = useCartStore((s) => s.updateQuantity);
+  const removeItem = useCartStore((s) => s.removeItem);
+
+  return (
+    <Card size="small" style={{ marginBottom: 8 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+        <div style={{ flex: 1 }}>
+          <Text strong>
+            {language === 'ar' ? item.nameAr : item.nameEn}
+          </Text>
+          {item.isBelowCost && (
+            <Tag color="red" icon={<WarningOutlined />} style={{ marginLeft: 4 }}>
+              Below Cost
+            </Tag>
+          )}
+          <br />
+          <Text type="secondary">
+            {parseFloat(item.sellingPrice).toFixed(2)} x
+          </Text>
+        </div>
+        <Space>
+          <InputNumber
+            size="small"
+            min={1}
+            value={parseFloat(item.quantity)}
+            onChange={(val) => updateQuantity(item.productId, String(val || 1))}
+            style={{ width: 60 }}
+          />
+          <Text strong>{parseFloat(item.lineTotal).toFixed(2)}</Text>
+          <Button
+            size="small"
+            type="text"
+            danger
+            icon={<DeleteOutlined />}
+            onClick={() => removeItem(item.productId)}
+          />
+        </Space>
+      </div>
+    </Card>
+  );
+}

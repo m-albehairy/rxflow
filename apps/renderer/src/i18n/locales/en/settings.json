@@ -1,0 +1,20 @@
+{
+  "title": "Settings",
+  "general": "General",
+  "pricing": "Pricing",
+  "credit": "Credit Sales",
+  "stock": "Stock & Alerts",
+  "hardware": "Hardware",
+  "shifts": "Shifts",
+  "backup": "Backup & Data",
+  "pharmacyName": "Pharmacy Name",
+  "currency": "Currency",
+  "taxPercent": "Tax Percentage",
+  "pricingMode": "Pricing Mode",
+  "defaultMargin": "Default Margin",
+  "allowBelowCost": "Below Cost Selling",
+  "printerType": "Printer Type",
+  "paperWidth": "Paper Width",
+  "backupNow": "Backup Now",
+  "restoreBackup": "Restore Backup"
+}

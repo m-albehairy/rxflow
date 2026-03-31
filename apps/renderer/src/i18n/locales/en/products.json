@@ -1,0 +1,20 @@
+{
+  "title": "Products",
+  "addProduct": "Add Product",
+  "editProduct": "Edit Product",
+  "barcode": "Barcode",
+  "category": "Category",
+  "sellingPrice": "Selling Price",
+  "minPrice": "Minimum Price",
+  "margin": "Margin %",
+  "taxable": "Taxable",
+  "trackExpiry": "Track Expiry",
+  "requirePrescription": "Requires Prescription",
+  "unit": "Unit",
+  "unitsPerPack": "Units Per Pack",
+  "isService": "Service Item",
+  "genericName": "Generic Name",
+  "bulkImport": "Bulk Import",
+  "bulkPriceUpdate": "Bulk Price Update",
+  "productHistory": "Product History"
+}

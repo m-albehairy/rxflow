@@ -1,0 +1,16 @@
+{
+  "title": "Customers",
+  "addCustomer": "Add Customer",
+  "phone": "Phone",
+  "email": "Email",
+  "nationalId": "National ID",
+  "dateOfBirth": "Date of Birth",
+  "loyaltyPoints": "Loyalty Points",
+  "totalPurchases": "Total Purchases",
+  "creditAccount": "Credit Account",
+  "creditLimit": "Credit Limit",
+  "currentBalance": "Current Balance",
+  "collectPayment": "Collect Payment",
+  "ledger": "Ledger",
+  "aging": "Aging Report"
+}

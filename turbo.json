@@ -1,0 +1,65 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": ["**/.env.*local"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
+    },
+    "build:win": {
+      "dependsOn": ["build"],
+      "outputs": ["release/**"]
+    },
+    "build:mac": {
+      "dependsOn": ["build"],
+      "outputs": ["release/**"]
+    },
+    "build:linux": {
+      "dependsOn": ["build"],
+      "outputs": ["release/**"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "lint": {
+      "dependsOn": ["^build"]
+    },
+    "type-check": {
+      "dependsOn": ["^build"]
+    },
+    "test": {
+      "dependsOn": ["^build"]
+    },
+    "test:e2e": {
+      "dependsOn": ["build"]
+    },
+    "migration:generate": {
+      "cache": false
+    },
+    "migration:run": {
+      "cache": false
+    },
+    "migration:revert": {
+      "cache": false
+    },
+    "migration:revert:all": {
+      "cache": false
+    },
+    "db:drop": {
+      "cache": false
+    },
+    "db:fresh": {
+      "cache": false
+    },
+    "seed": {
+      "cache": false
+    },
+    "seed:egypt-pharmacy": {
+      "cache": false
+    },
+    "clean": {
+      "cache": false
+    }
+  }
+}

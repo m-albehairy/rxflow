@@ -1,0 +1,20 @@
+{
+  "title": "الإعدادات",
+  "general": "عام",
+  "pricing": "التسعير",
+  "credit": "المبيعات الآجلة",
+  "stock": "المخزون والتنبيهات",
+  "hardware": "الأجهزة",
+  "shifts": "الورديات",
+  "backup": "النسخ الاحتياطي",
+  "pharmacyName": "اسم الصيدلية",
+  "currency": "العملة",
+  "taxPercent": "نسبة الضريبة",
+  "pricingMode": "نمط التسعير",
+  "defaultMargin": "هامش الربح الافتراضي",
+  "allowBelowCost": "البيع أقل من التكلفة",
+  "printerType": "نوع الطابعة",
+  "paperWidth": "عرض الورق",
+  "backupNow": "نسخ احتياطي الآن",
+  "restoreBackup": "استعادة نسخة احتياطية"
+}

@@ -1,0 +1,17 @@
+{
+  "title": "Purchases",
+  "newPurchase": "New Purchase",
+  "supplier": "Supplier",
+  "purchaseNumber": "Purchase #",
+  "invoiceDate": "Invoice Date",
+  "refNumber": "Reference Number",
+  "totalCost": "Total Cost",
+  "grandTotal": "Grand Total",
+  "wacPreview": "WAC Preview",
+  "oldQty": "Old Qty",
+  "oldAvgCost": "Old Avg Cost",
+  "newAvgCost": "New Avg Cost",
+  "freeQty": "Free Qty",
+  "unitCost": "Unit Cost",
+  "voidPurchase": "Void Purchase"
+}

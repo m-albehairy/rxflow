@@ -1,0 +1,6 @@
+export const INVOICE_SEQ_PAD = 6;
+export const INVOICE_PREFIX_DEFAULT = 'INV';
+export const PURCHASE_PREFIX_DEFAULT = 'PUR';
+export const REFUND_PREFIX_DEFAULT = 'RFD';
+export const CREDIT_PAYMENT_PREFIX_DEFAULT = 'CRP';
+export const EXCHANGE_PREFIX_DEFAULT = 'EXC';
