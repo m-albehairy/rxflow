@@ -73,7 +73,7 @@ export function BarcodeLabelModal({ open, onClose, selectedProducts }: BarcodeLa
         open={open}
         onCancel={onClose}
         width={720}
-        destroyOnClose
+        destroyOnHidden
         footer={
           <Space>
             <Button onClick={onClose}>{isAr ? 'إلغاء' : 'Cancel'}</Button>

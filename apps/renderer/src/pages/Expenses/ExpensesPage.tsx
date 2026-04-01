@@ -327,7 +327,7 @@ export function ExpensesPage() {
         onClose={() => setDrawerOpen(false)}
         placement={i18n.language === 'ar' ? 'left' : 'right'}
         width={520}
-        destroyOnClose
+        destroyOnHidden
         extra={
           <Space>
             <Button onClick={() => setDrawerOpen(false)}>{t('cancel', { ns: 'common' })}</Button>

@@ -270,7 +270,7 @@ export function UserList() {
         onOk={handleResetPassword}
         onCancel={() => { setResetPwOpen(false); pwForm.resetFields(); }}
         confirmLoading={pwLoading}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form form={pwForm} layout="vertical">
           <Form.Item
@@ -308,7 +308,7 @@ export function UserList() {
         onOk={handleResetPin}
         onCancel={() => { setResetPinOpen(false); pinForm.resetFields(); }}
         confirmLoading={pinLoading}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form form={pinForm} layout="vertical">
           <Form.Item

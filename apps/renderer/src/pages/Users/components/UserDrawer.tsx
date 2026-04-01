@@ -86,7 +86,7 @@ export function UserDrawer({ open, mode, user, onClose, onSuccess }: UserDrawerP
       onClose={onClose}
       placement={isRTL ? 'left' : 'right'}
       width={520}
-      destroyOnClose
+      destroyOnHidden
       extra={
         <Space>
           <Button onClick={onClose}>{t('cancel', { ns: 'common' })}</Button>

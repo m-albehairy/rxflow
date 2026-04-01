@@ -77,7 +77,7 @@ export function RoleDrawer({ open, mode, role, onClose, onSuccess }: RoleDrawerP
       onClose={onClose}
       placement={isRTL ? 'left' : 'right'}
       width={640}
-      destroyOnClose
+      destroyOnHidden
       extra={
         <Space>
           <Button onClick={onClose}>{t('cancel', { ns: 'common' })}</Button>

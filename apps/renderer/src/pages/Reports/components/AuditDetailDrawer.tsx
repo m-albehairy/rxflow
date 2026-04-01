@@ -36,7 +36,7 @@ export function AuditDetailDrawer({ open, record, onClose }: AuditDetailDrawerPr
       onClose={onClose}
       placement={isRTL ? 'left' : 'right'}
       width={600}
-      destroyOnClose
+      destroyOnHidden
     >
       <Descriptions column={1} bordered size="small" style={{ marginBottom: 24 }}>
         <Descriptions.Item label={t('auditTimestamp')}>

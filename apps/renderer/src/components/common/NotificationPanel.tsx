@@ -247,7 +247,7 @@ export function NotificationPanel() {
       onOpenChange={setOpen}
       placement="bottomRight"
       arrow={false}
-      overlayInnerStyle={{ padding: 0, borderRadius: 10, overflow: 'hidden' }}
+      styles={{ body: { padding: 0, borderRadius: 10, overflow: 'hidden' } }}
     >
       <Tooltip title={!open ? t('title') : undefined}>
         <Badge count={unreadCount} size="small" offset={[-4, 4]}>

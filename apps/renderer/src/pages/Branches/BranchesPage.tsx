@@ -228,7 +228,7 @@ export function BranchesPage() {
         onClose={() => setDrawerOpen(false)}
         placement={i18n.language === 'ar' ? 'left' : 'right'}
         width={480}
-        destroyOnClose
+        destroyOnHidden
         extra={
           <Space>
             <Button onClick={() => setDrawerOpen(false)}>{t('cancel', { ns: 'common' })}</Button>

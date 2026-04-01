@@ -253,7 +253,7 @@ export function StockTransfersPage() {
         onClose={() => setCreateDrawerOpen(false)}
         placement={i18n.language === 'ar' ? 'left' : 'right'}
         width={600}
-        destroyOnClose
+        destroyOnHidden
         extra={
           <Space>
             <Button onClick={() => setCreateDrawerOpen(false)}>{t('cancel', { ns: 'common' })}</Button>
@@ -356,7 +356,7 @@ export function StockTransfersPage() {
         onClose={() => { setDetailDrawerOpen(false); setSelectedTransfer(null); }}
         placement={i18n.language === 'ar' ? 'left' : 'right'}
         width={600}
-        destroyOnClose
+        destroyOnHidden
         extra={
           selectedTransfer && (
             <Space>
