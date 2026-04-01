@@ -20,6 +20,9 @@ const PERMISSION_MAP: Record<string, string> = {
   'suppliers:manage':  'canManageSuppliers',
   'branches:manage':   'canManageBranches',
   'stock:transfer':    'canTransferStock',
+  'services:view':     'canViewServices',
+  'services:manage':   'canManageServices',
+  'services:perform':  'canPerformServices',
 };
 
 @Injectable()

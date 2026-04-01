@@ -18,6 +18,15 @@ export interface CartItem {
   isOverride: boolean;
   batchId: string | null;
   stockAvailable: string;
+  itemType: 'product' | 'service';
+  serviceId: string | null;
+  performerId: string | null;
+  performerName: string | null;
+  patientName: string | null;
+  patientPhone: string | null;
+  serviceNotes: string | null;
+  serviceDuration: number | null;
+  isPriceEditable: boolean;
 }
 
 export interface OrderTab {
@@ -164,7 +173,7 @@ export const useCartStore = create<CartState>()(
       set((state) => {
         const tab = state.tabs.find((t) => t.id === state.activeTabId);
         if (!tab) return;
-        const existing = tab.items.find((i) => i.productId === item.productId);
+        const existing = tab.items.find((i) => i.productId === item.productId && i.itemType === item.itemType);
         if (existing) {
           const newQty = new Decimal(existing.quantity).plus(new Decimal(item.quantity));
           existing.quantity = newQty.toFixed(4);
@@ -349,7 +358,7 @@ export const useCartStore = create<CartState>()(
         const mergedItems: CartItem[] = [];
         for (const tab of tabsToMerge) {
           for (const item of tab.items) {
-            const existing = mergedItems.find((i) => i.productId === item.productId);
+            const existing = mergedItems.find((i) => i.productId === item.productId && i.itemType === item.itemType);
             if (existing) {
               const newQty = new Decimal(existing.quantity).plus(new Decimal(item.quantity));
               existing.quantity = newQty.toFixed(4);

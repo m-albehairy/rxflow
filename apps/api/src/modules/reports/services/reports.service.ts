@@ -862,4 +862,76 @@ export class ReportsService {
 
     return this.dataSource.query(query, params);
   }
+
+  async serviceReport(params: { from?: string; to?: string; performerId?: string }) {
+    let summaryQuery = `
+      SELECT
+        COUNT(*) as "servicesPerformed",
+        SUM(CAST(ii.total AS numeric)) as "totalRevenue",
+        COUNT(DISTINCT ii.service_id) as "uniqueServices"
+      FROM invoice_items ii
+      JOIN invoices i ON ii.invoice_id = i.id
+      WHERE ii.item_type = 'SERVICE'
+        AND i.deleted_at IS NULL AND i.status NOT IN ('VOIDED', 'DRAFT')
+    `;
+    const queryParams: unknown[] = [];
+    let paramIndex = 1;
+
+    if (params.from) { summaryQuery += ` AND i.created_at >= $${paramIndex++}`; queryParams.push(params.from); }
+    if (params.to) { summaryQuery += ` AND i.created_at <= $${paramIndex++}`; queryParams.push(params.to); }
+    if (params.performerId) { summaryQuery += ` AND ii.performer_id = $${paramIndex++}`; queryParams.push(params.performerId); }
+
+    const [summary] = await this.dataSource.query(summaryQuery, queryParams);
+
+    let topQuery = `
+      SELECT
+        ms.id, ms.name_en as "nameEn", ms.name_ar as "nameAr", ms.code,
+        COUNT(*) as "timesPerformed",
+        SUM(CAST(ii.quantity AS numeric)) as "totalQuantity",
+        SUM(CAST(ii.total AS numeric)) as "totalRevenue"
+      FROM invoice_items ii
+      JOIN medical_services ms ON ii.service_id = ms.id
+      JOIN invoices i ON ii.invoice_id = i.id
+      WHERE ii.item_type = 'SERVICE'
+        AND i.deleted_at IS NULL AND i.status NOT IN ('VOIDED', 'DRAFT')
+    `;
+    const topParams: unknown[] = [];
+    let topIdx = 1;
+
+    if (params.from) { topQuery += ` AND i.created_at >= $${topIdx++}`; topParams.push(params.from); }
+    if (params.to) { topQuery += ` AND i.created_at <= $${topIdx++}`; topParams.push(params.to); }
+    if (params.performerId) { topQuery += ` AND ii.performer_id = $${topIdx++}`; topParams.push(params.performerId); }
+
+    topQuery += ` GROUP BY ms.id, ms.name_en, ms.name_ar, ms.code ORDER BY "totalRevenue" DESC LIMIT 20`;
+
+    const topServices = await this.dataSource.query(topQuery, topParams);
+
+    return { summary, topServices };
+  }
+
+  async performerReport(params: { from?: string; to?: string }) {
+    let query = `
+      SELECT
+        u.id as "performerId",
+        COALESCE(u.full_name, u.username) as "performerName",
+        COUNT(*) as "servicesPerformed",
+        SUM(CAST(ii.total AS numeric)) as "totalRevenue",
+        COUNT(DISTINCT ii.service_id) as "uniqueServices"
+      FROM invoice_items ii
+      JOIN users u ON ii.performer_id = u.id
+      JOIN invoices i ON ii.invoice_id = i.id
+      WHERE ii.item_type = 'SERVICE'
+        AND i.deleted_at IS NULL AND i.status NOT IN ('VOIDED', 'DRAFT')
+        AND ii.performer_id IS NOT NULL
+    `;
+    const queryParams: unknown[] = [];
+    let paramIndex = 1;
+
+    if (params.from) { query += ` AND i.created_at >= $${paramIndex++}`; queryParams.push(params.from); }
+    if (params.to) { query += ` AND i.created_at <= $${paramIndex++}`; queryParams.push(params.to); }
+
+    query += ` GROUP BY u.id, u.full_name, u.username ORDER BY "totalRevenue" DESC`;
+
+    return this.dataSource.query(query, queryParams);
+  }
 }

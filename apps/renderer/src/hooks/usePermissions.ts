@@ -48,5 +48,8 @@ export function usePermissions() {
     canManageSuppliers: can('canManageSuppliers'),
     canManageBranches: can('canManageBranches'),
     canTransferStock: can('canTransferStock'),
+    canViewServices: can('canViewServices'),
+    canManageServices: can('canManageServices'),
+    canPerformServices: can('canPerformServices'),
   };
 }

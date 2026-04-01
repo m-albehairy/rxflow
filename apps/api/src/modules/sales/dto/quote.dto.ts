@@ -2,7 +2,9 @@ import { IsString, IsOptional, IsArray, ValidateNested, IsNotEmpty, IsUUID } fro
 import { Type } from 'class-transformer';
 
 export class QuoteItemDto {
-  @IsUUID() productId: string;
+  @IsString() @IsOptional() itemType?: string;
+  @IsUUID() @IsOptional() productId?: string;
+  @IsUUID() @IsOptional() serviceId?: string;
   @IsString() @IsNotEmpty() quantity: string;
   @IsString() @IsNotEmpty() cost: string;
   @IsString() @IsNotEmpty() sellingPrice: string;

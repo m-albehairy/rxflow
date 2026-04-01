@@ -42,4 +42,10 @@ export const reportsApi = {
 
   comparative: (params?: Record<string, unknown>) =>
     apiClient.get('/reports/comparative', { params }),
+
+  services: (params?: Record<string, unknown>) =>
+    apiClient.get('/reports/services', { params }),
+
+  servicePerformers: (params?: Record<string, unknown>) =>
+    apiClient.get('/reports/services/performers', { params }),
 };

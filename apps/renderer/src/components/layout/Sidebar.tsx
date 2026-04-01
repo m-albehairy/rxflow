@@ -29,6 +29,7 @@ import {
   StopOutlined,
   PieChartOutlined,
   SlidersOutlined,
+  MedicineBoxOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -128,6 +129,9 @@ export function Sidebar() {
       : { type: 'divider' as const },
     { key: '/products', icon: <AppstoreOutlined />, label: t('products') },
     { key: '/customers', icon: <TeamOutlined />, label: t('customers') },
+    ...(perms.can('canManageServices') || perms.can('canViewServices')
+      ? [{ key: '/services', icon: <MedicineBoxOutlined />, label: t('services', 'Services') } as ItemType]
+      : []),
 
     // ── INVENTORY ──
     ...((perms.canAccessInventory || perms.canCreatePurchase)
@@ -197,6 +201,7 @@ export function Sidebar() {
                   { key: '/reports/dead-stock', icon: <StopOutlined />, label: t('deadStock', 'Dead Stock') },
                   { key: '/reports/customer-analytics', icon: <PieChartOutlined />, label: t('customerAnalytics', 'Customer Analytics') },
                   { key: '/reports/comparative', icon: <SlidersOutlined />, label: t('comparativeReport', 'Comparative') },
+                  { key: '/reports/services', icon: <MedicineBoxOutlined />, label: t('servicesReport', 'Services') },
                 ],
               } as ItemType,
               { type: 'divider' as const } as ItemType,

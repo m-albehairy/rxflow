@@ -5,6 +5,7 @@ import { useCartStore } from '@/store/cart.store';
 import { useSettings } from '@/hooks/useSettings';
 import { usePrinter } from '@/hooks/usePrinter';
 import { salesApi } from '@/api/sales.api';
+import { InvoiceItemType } from '@pharmapos/shared';
 import Decimal from 'decimal.js';
 
 const { Title, Text } = Typography;
@@ -38,7 +39,9 @@ export function PaymentModal({ open, onClose, shiftId }: Props) {
     setLoading(true);
     try {
       const invoiceItems = activeTab.items.map((item) => ({
-        productId: item.productId,
+        itemType: item.itemType === 'service' ? InvoiceItemType.SERVICE : InvoiceItemType.PRODUCT,
+        productId: item.itemType === 'product' ? item.productId : undefined,
+        serviceId: item.itemType === 'service' ? item.serviceId : undefined,
         quantity: item.quantity,
         cost: item.cost,
         suggestedPrice: item.suggestedPrice,
@@ -46,6 +49,10 @@ export function PaymentModal({ open, onClose, shiftId }: Props) {
         discountPct: item.discountPct,
         isOverride: item.isOverride,
         batchId: item.batchId,
+        performerId: item.performerId || undefined,
+        patientName: item.patientName || undefined,
+        patientPhone: item.patientPhone || undefined,
+        serviceNotes: item.serviceNotes || undefined,
       }));
 
       const res: any = await salesApi.createInvoice({

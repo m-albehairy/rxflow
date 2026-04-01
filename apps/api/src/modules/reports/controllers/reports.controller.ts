@@ -83,4 +83,20 @@ export class ReportsController {
   async comparativeReport(@Query('type') type?: string) {
     return this.reportsService.comparativeReport(type || 'mom');
   }
+
+  @Get('services')
+  @RequirePermission('reports:view')
+  async serviceReport(
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+    @Query('performerId') performerId?: string,
+  ) {
+    return this.reportsService.serviceReport({ from, to, performerId });
+  }
+
+  @Get('services/performers')
+  @RequirePermission('reports:view')
+  async performerReport(@Query('from') from?: string, @Query('to') to?: string) {
+    return this.reportsService.performerReport({ from, to });
+  }
 }

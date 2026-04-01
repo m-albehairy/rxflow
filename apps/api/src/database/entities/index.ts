@@ -26,3 +26,5 @@ export * from './stock-transfer.entity';
 export * from './stock-transfer-item.entity';
 export * from './notification.entity';
 export * from './notification-preference.entity';
+export * from './medical-service.entity';
+export * from './service-material.entity';

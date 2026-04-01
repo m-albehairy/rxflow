@@ -19,6 +19,7 @@ import { StatusBadge } from './components/StatusBadge';
 import { ExchangeModal } from './components/ExchangeModal';
 import { MergeOrdersModal } from './components/MergeOrdersModal';
 import { CloseSessionModal } from './components/CloseSessionModal';
+import { ServiceDetailModal } from './components/ServiceDetailModal';
 import { QuickKeys } from './components/QuickKeys';
 import { useCartStore } from '@/store/cart.store';
 import { useBarcode } from '@/hooks/useBarcode';
@@ -36,6 +37,8 @@ export function POSPage() {
   const [mergeOpen, setMergeOpen] = useState(false);
   const [closeSessionOpen, setCloseSessionOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const [serviceModalOpen, setServiceModalOpen] = useState(false);
+  const [pendingService, setPendingService] = useState<any>(null);
 
   const addItem = useCartStore((s) => s.addItem);
   const tabs = useCartStore((s) => s.tabs);
@@ -55,6 +58,7 @@ export function POSPage() {
           : await productsApi.getByBarcode(barcode);
         const product = res.data || res;
         addItem({
+          itemType: 'product',
           productId: product.id,
           barcode: product.barcode,
           nameEn: product.nameEn,
@@ -70,6 +74,14 @@ export function POSPage() {
           isOverride: false,
           batchId: null,
           stockAvailable: product.inventory?.quantity || '0',
+          serviceId: null,
+          performerId: null,
+          performerName: null,
+          patientName: null,
+          patientPhone: null,
+          serviceNotes: null,
+          serviceDuration: null,
+          isPriceEditable: false,
         });
       } catch {
         message.error('Product not found');
@@ -79,6 +91,11 @@ export function POSPage() {
   );
 
   useBarcode({ onScan: handleBarcodeScan, enabled: true });
+
+  const handleAddService = useCallback((service: any) => {
+    setPendingService(service);
+    setServiceModalOpen(true);
+  }, []);
 
   return (
     <div style={{ height: 'calc(100vh - 120px)', display: 'flex', flexDirection: 'column' }}>
@@ -136,6 +153,7 @@ export function POSPage() {
             searchText={searchText}
             onSearchChange={setSearchText}
             onAddProduct={handleBarcodeScan}
+            onAddService={handleAddService}
           />
         </Col>
         <Col span={9} style={{ height: '100%' }}>
@@ -170,6 +188,11 @@ export function POSPage() {
       <CloseSessionModal
         open={closeSessionOpen}
         onClose={() => setCloseSessionOpen(false)}
+      />
+      <ServiceDetailModal
+        open={serviceModalOpen}
+        onClose={() => { setServiceModalOpen(false); setPendingService(null); }}
+        service={pendingService}
       />
     </div>
   );

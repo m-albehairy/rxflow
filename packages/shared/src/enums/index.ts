@@ -11,3 +11,4 @@ export * from './expense.enums';
 export * from './supplier.enums';
 export * from './branch.enums';
 export * from './notification.enums';
+export * from './service.enums';

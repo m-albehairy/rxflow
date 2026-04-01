@@ -1,8 +1,9 @@
 import React from 'react';
 import { Card, InputNumber, Button, Typography, Space, Tag } from 'antd';
-import { DeleteOutlined, MinusOutlined, PlusOutlined, WarningOutlined } from '@ant-design/icons';
+import { DeleteOutlined, MinusOutlined, PlusOutlined, WarningOutlined, MedicineBoxOutlined } from '@ant-design/icons';
 import { useCartStore, CartItem as CartItemType } from '@/store/cart.store';
 import { useUIStore } from '@/store/ui.store';
+import { useTranslation } from 'react-i18next';
 
 const { Text } = Typography;
 
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export function CartItem({ item }: Props) {
+  const { t } = useTranslation('pos');
   const language = useUIStore((s) => s.language);
   const updateQuantity = useCartStore((s) => s.updateQuantity);
   const removeItem = useCartStore((s) => s.removeItem);
@@ -23,10 +25,26 @@ export function CartItem({ item }: Props) {
           <Text strong>
             {language === 'ar' ? item.nameAr : item.nameEn}
           </Text>
-          {item.isBelowCost && (
-            <Tag color="red" icon={<WarningOutlined />} style={{ marginLeft: 4 }}>
-              Below Cost
+          {item.itemType === 'service' && (
+            <Tag color="cyan" style={{ marginInlineStart: 4, fontSize: 10, lineHeight: '16px', padding: '0 4px' }}>
+              <MedicineBoxOutlined style={{ marginInlineEnd: 2 }} />
+              {t('service', 'Service')}
             </Tag>
+          )}
+          {item.isBelowCost && item.itemType !== 'service' && (
+            <Tag color="red" icon={<WarningOutlined />} style={{ marginLeft: 4 }}>
+              {t('belowCost', 'Below Cost')}
+            </Tag>
+          )}
+          {item.itemType === 'service' && item.performerName && (
+            <Text type="secondary" style={{ fontSize: 11, display: 'block' }}>
+              {item.performerName}
+            </Text>
+          )}
+          {item.itemType === 'service' && item.patientName && (
+            <Text type="secondary" style={{ fontSize: 11, display: 'block' }}>
+              {t('patient', 'Patient')}: {item.patientName}
+            </Text>
           )}
           <br />
           <Text type="secondary">

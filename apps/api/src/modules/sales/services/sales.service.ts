@@ -11,8 +11,9 @@ import { RulesEngineService } from '../../../shared/rules/rules-engine.service';
 import { SequenceService } from '../../../shared/sequence/sequence.service';
 import { AuditService } from '../../../shared/audit/audit.service';
 import { SettingsCacheService } from '../../../shared/settings/settings-cache.service';
+import { MedicalService } from '../../../database/entities/medical-service.entity';
 import { ErrorMessages } from '../../../common/constants/error-messages';
-import { AuditAction, InvoiceStatus, INVOICE_PREFIX_DEFAULT, DEFAULT_PAGE, DEFAULT_LIMIT, MAX_LIMIT } from '@pharmapos/shared';
+import { AuditAction, InvoiceStatus, InvoiceItemType, INVOICE_PREFIX_DEFAULT, DEFAULT_PAGE, DEFAULT_LIMIT, MAX_LIMIT, ServiceType } from '@pharmapos/shared';
 import { CreateInvoiceDto } from '../dto/create-invoice.dto';
 import { QuoteDto } from '../dto/quote.dto';
 import { FilterInvoiceDto } from '../dto/filter-invoice.dto';
@@ -42,6 +43,7 @@ export class SalesService {
     const itemResults: Array<Record<string, unknown>> = [];
 
     for (const item of dto.items) {
+      const itemType = (item.itemType as InvoiceItemType) || InvoiceItemType.PRODUCT;
       const cost = new Decimal(item.cost);
       const sellingPrice = new Decimal(item.sellingPrice);
       const qty = new Decimal(item.quantity);
@@ -57,7 +59,9 @@ export class SalesService {
       totalDiscount = totalDiscount.plus(lineDiscount);
 
       itemResults.push({
-        productId: item.productId,
+        itemType,
+        productId: item.productId || null,
+        serviceId: item.serviceId || null,
         quantity: qty.toFixed(4),
         cost: cost.toFixed(4),
         sellingPrice: sellingPrice.toFixed(4),
@@ -120,6 +124,7 @@ export class SalesService {
       });
 
       for (const item of dto.items) {
+        const itemType = (item.itemType as InvoiceItemType) || InvoiceItemType.PRODUCT;
         const cost = new Decimal(item.cost);
         const sellingPrice = new Decimal(item.sellingPrice);
         const qty = new Decimal(item.quantity);
@@ -136,10 +141,11 @@ export class SalesService {
 
         const isBelowCost = sellingPrice.lessThan(cost);
         const isOverride = item.isOverride || false;
+        const isService = itemType === InvoiceItemType.SERVICE;
 
-        await queryRunner.manager.save(InvoiceItem, {
+        const baseItemData = {
           invoiceId: invoice.id,
-          productId: item.productId,
+          itemType,
           quantity: qty.toFixed(4),
           cost: cost.toFixed(4),
           suggestedPrice: item.suggestedPrice,
@@ -150,11 +156,57 @@ export class SalesService {
           profit: lineProfit.toFixed(4),
           isBelowCost,
           isOverride,
-          batchId: item.batchId || null,
-        });
+        };
 
-        // Deduct inventory (FEFO)
-        await this.inventoryService.deductFEFO(queryRunner, item.productId, qty.toFixed(4));
+        if (isService) {
+          await queryRunner.manager.save(InvoiceItem, {
+            ...baseItemData,
+            productId: null,
+            serviceId: item.serviceId,
+            batchId: null,
+            patientName: item.patientName || null,
+            patientPhone: item.patientPhone || null,
+            performerId: item.performerId || null,
+            serviceNotes: item.serviceNotes || null,
+          });
+
+          // Deduct materials for stock-linked services
+          const service = await queryRunner.manager.findOne(MedicalService, {
+            where: { id: item.serviceId },
+            relations: ['materials'],
+          });
+          if (service?.serviceType === ServiceType.STOCK_LINKED && service.materials?.length) {
+            for (const mat of service.materials) {
+              const matQty = new Decimal(mat.quantity).times(qty);
+              await this.inventoryService.deductFEFO(queryRunner, mat.productId, matQty.toFixed(4));
+            }
+          }
+
+          // Audit service performed
+          await this.auditService.log(queryRunner, {
+            userId: user.id,
+            action: AuditAction.SERVICE_PERFORMED,
+            entityType: 'InvoiceItem',
+            entityId: invoice.id,
+            invoiceId: invoice.id,
+            metadata: {
+              serviceId: item.serviceId,
+              patientName: item.patientName,
+              performerId: item.performerId,
+              quantity: qty.toFixed(4),
+              sellingPrice: sellingPrice.toFixed(4),
+            },
+          });
+        } else {
+          await queryRunner.manager.save(InvoiceItem, {
+            ...baseItemData,
+            productId: item.productId,
+            batchId: item.batchId || null,
+          });
+
+          // Deduct inventory (FEFO)
+          await this.inventoryService.deductFEFO(queryRunner, item.productId!, qty.toFixed(4));
+        }
 
         // Log below-cost sales
         if (isBelowCost) {
@@ -260,7 +312,7 @@ export class SalesService {
   async findById(id: string): Promise<Invoice> {
     const invoice = await this.invoiceRepo.findOne({
       where: { id, deletedAt: IsNull() },
-      relations: ['cashier', 'customer', 'items', 'items.product', 'payments'],
+      relations: ['cashier', 'customer', 'items', 'items.product', 'items.medicalService', 'payments'],
     });
     if (!invoice) throw new NotFoundException(ErrorMessages.INVOICE_NOT_FOUND);
     return invoice;
@@ -378,12 +430,27 @@ export class SalesService {
       let newTotal = new Decimal(0);
       let newTotalCost = new Decimal(0);
       for (const item of dto.newItems || []) {
+        const itemType = (item.itemType as InvoiceItemType) || InvoiceItemType.PRODUCT;
         const sellingPrice = new Decimal(item.sellingPrice);
         const qty = new Decimal(item.quantity);
         const cost = new Decimal(item.cost);
         newTotal = newTotal.plus(sellingPrice.times(qty));
         newTotalCost = newTotalCost.plus(cost.times(qty));
-        await this.inventoryService.deductFEFO(queryRunner, item.productId, qty.toFixed(4));
+
+        if (itemType === InvoiceItemType.SERVICE) {
+          const service = await queryRunner.manager.findOne(MedicalService, {
+            where: { id: item.serviceId },
+            relations: ['materials'],
+          });
+          if (service?.serviceType === ServiceType.STOCK_LINKED && service.materials?.length) {
+            for (const mat of service.materials) {
+              const matQty = new Decimal(mat.quantity).times(qty);
+              await this.inventoryService.deductFEFO(queryRunner, mat.productId, matQty.toFixed(4));
+            }
+          }
+        } else {
+          await this.inventoryService.deductFEFO(queryRunner, item.productId, qty.toFixed(4));
+        }
       }
 
       const difference = newTotal.minus(returnTotal);
@@ -411,9 +478,12 @@ export class SalesService {
 
       // Create new invoice items
       for (const item of dto.newItems || []) {
+        const itemType = (item.itemType as InvoiceItemType) || InvoiceItemType.PRODUCT;
         await queryRunner.manager.save(InvoiceItem, {
           invoiceId: exchangeInvoice.id,
-          productId: item.productId,
+          itemType,
+          productId: itemType === InvoiceItemType.PRODUCT ? item.productId : null,
+          serviceId: itemType === InvoiceItemType.SERVICE ? item.serviceId : null,
           quantity: item.quantity,
           cost: item.cost,
           suggestedPrice: item.suggestedPrice,

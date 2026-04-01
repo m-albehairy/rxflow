@@ -17,6 +17,7 @@ import expensesEn from './locales/en/expenses.json';
 import suppliersEn from './locales/en/suppliers.json';
 import branchesEn from './locales/en/branches.json';
 import notificationsEn from './locales/en/notifications.json';
+import servicesEn from './locales/en/services.json';
 
 import commonAr from './locales/ar/common.json';
 import posAr from './locales/ar/pos.json';
@@ -34,6 +35,7 @@ import expensesAr from './locales/ar/expenses.json';
 import suppliersAr from './locales/ar/suppliers.json';
 import branchesAr from './locales/ar/branches.json';
 import notificationsAr from './locales/ar/notifications.json';
+import servicesAr from './locales/ar/services.json';
 
 i18n.use(initReactI18next).init({
   resources: {
@@ -54,6 +56,7 @@ i18n.use(initReactI18next).init({
       suppliers: suppliersEn,
       branches: branchesEn,
       notifications: notificationsEn,
+      services: servicesEn,
     },
     ar: {
       common: commonAr,
@@ -72,6 +75,7 @@ i18n.use(initReactI18next).init({
       suppliers: suppliersAr,
       branches: branchesAr,
       notifications: notificationsAr,
+      services: servicesAr,
     },
   },
   lng: 'ar',

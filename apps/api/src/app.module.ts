@@ -25,6 +25,7 @@ import { HealthModule } from './modules/health/health.module';
 import { ExpensesModule } from './modules/expenses/expenses.module';
 import { BranchesModule } from './modules/branches/branches.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { MedicalServicesModule } from './modules/medical-services/medical-services.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { JwtAuthGuard } from './common/guards/jwt.guard';
 import { PermissionsGuard } from './common/guards/permissions.guard';
@@ -55,6 +56,7 @@ import { PermissionsGuard } from './common/guards/permissions.guard';
     ExpensesModule,
     BranchesModule,
     NotificationsModule,
+    MedicalServicesModule,
     ScheduleModule.forRoot(),
   ],
   providers: [

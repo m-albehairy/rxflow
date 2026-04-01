@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import {
   Input, Card, Row, Col, Tag, Tabs, Spin, Empty, Typography, Button, Space, Table, Badge,
-  Image,
+  Image, Segmented,
 } from 'antd';
 import {
-  SearchOutlined, MedicineBoxOutlined,
+  SearchOutlined, MedicineBoxOutlined, AppstoreOutlined,
   ScanOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { productsApi } from '@/api/products.api';
+import { servicesApi } from '@/api/services.api';
 import { useUIStore } from '@/store/ui.store';
+import { usePermissions } from '@/hooks/usePermissions';
 
 const { Text } = Typography;
 
@@ -17,6 +19,7 @@ interface Props {
   searchText: string;
   onSearchChange: (text: string) => void;
   onAddProduct: (barcode: string) => void;
+  onAddService: (service: any) => void;
 }
 
 const CATEGORIES = [
@@ -35,7 +38,7 @@ const CATEGORIES = [
   { key: 'frozen', en: 'Frozen Foods', ar: 'أطعمة مجمدة' },
 ];
 
-export function ProductGrid({ searchText, onSearchChange, onAddProduct }: Props) {
+export function ProductGrid({ searchText, onSearchChange, onAddProduct, onAddService }: Props) {
   const { t } = useTranslation('pos');
   const language = useUIStore((s) => s.language);
   const posViewMode = useUIStore((s) => s.posViewMode);
@@ -43,6 +46,10 @@ export function ProductGrid({ searchText, onSearchChange, onAddProduct }: Props)
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [viewMode, setViewMode] = useState<'products' | 'services'>('products');
+  const [services, setServices] = useState<any[]>([]);
+  const [servicesLoading, setServicesLoading] = useState(false);
+  const perms = usePermissions();
 
   useEffect(() => {
     loadProducts();
@@ -62,6 +69,22 @@ export function ProductGrid({ searchText, onSearchChange, onAddProduct }: Props)
       setLoading(false);
     }
   };
+
+  const loadServices = async () => {
+    setServicesLoading(true);
+    try {
+      const res: any = await servicesApi.posActive();
+      setServices(Array.isArray(res) ? res : (res?.data || []));
+    } catch {
+      setServices([]);
+    } finally {
+      setServicesLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (viewMode === 'services') loadServices();
+  }, [viewMode]);
 
   const getStock = (product: any) => parseFloat(product.inventory?.quantity || '0');
   const isOutOfStock = (product: any) => getStock(product) <= 0;
@@ -125,6 +148,20 @@ export function ProductGrid({ searchText, onSearchChange, onAddProduct }: Props)
 
   return (
     <div>
+      {/* Products / Services Toggle */}
+      {perms.can('canPerformServices') && (
+        <Segmented
+          value={viewMode}
+          onChange={(val) => setViewMode(val as 'products' | 'services')}
+          options={[
+            { label: language === 'ar' ? 'المنتجات' : 'Products', value: 'products', icon: <AppstoreOutlined /> },
+            { label: language === 'ar' ? 'الخدمات' : 'Services', value: 'services', icon: <MedicineBoxOutlined /> },
+          ]}
+          block
+          style={{ marginBottom: 8 }}
+        />
+      )}
+
       {/* Search + View Toggle */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
         <Input
@@ -140,101 +177,158 @@ export function ProductGrid({ searchText, onSearchChange, onAddProduct }: Props)
         <Button size="large" icon={<ScanOutlined />}>{t('scanBarcode')}</Button>
       </div>
 
-      {/* Category Tabs */}
-      <Tabs
-        activeKey={activeCategory}
-        onChange={setActiveCategory}
-        items={categoryItems}
-        type="card"
-        size="small"
-        style={{ marginBottom: 8 }}
-      />
-
-      <Spin spinning={loading}>
-        {products.length === 0 ? (
-          <Empty description={t('searchProduct')} />
-        ) : posViewMode === 'list' ? (
-          <Table
-            dataSource={products}
-            columns={listColumns}
-            rowKey="id"
+      {viewMode === 'products' ? (
+        <>
+          {/* Category Tabs */}
+          <Tabs
+            activeKey={activeCategory}
+            onChange={setActiveCategory}
+            items={categoryItems}
+            type="card"
             size="small"
-            pagination={false}
-            onRow={(product) => ({
-              onClick: () => handleProductClick(product),
-              style: { cursor: isOutOfStock(product) ? 'not-allowed' : 'pointer', opacity: isOutOfStock(product) ? 0.5 : 1 },
-            })}
+            style={{ marginBottom: 8 }}
           />
-        ) : (
-          <Row gutter={[8, 8]}>
-            {products.map((product) => {
-              const stock = getStock(product);
-              const outOfStock = stock <= 0;
-              return (
-                <Col span={Math.floor(24 / posGridColumns)} key={product.id}>
-                  <Badge.Ribbon
-                    text={outOfStock ? t('outOfStock') : undefined}
-                    color={outOfStock ? 'red' : 'transparent'}
-                    style={outOfStock ? {} : { display: 'none' }}
-                  >
-                    <Card
-                      hoverable={!outOfStock}
-                      size="small"
-                      onClick={() => handleProductClick(product)}
-                      style={{
-                        textAlign: 'center',
-                        opacity: outOfStock ? 0.5 : 1,
-                        cursor: outOfStock ? 'not-allowed' : 'pointer',
-                        position: 'relative',
-                        borderRadius: 10,
-                        border: '1px solid var(--app-color-border)',
-                        overflow: 'hidden',
-                      }}
-                      styles={{ body: { padding: '10px 8px' } }}
-                      cover={
-                        product.imageUrl ? (
-                          <div style={{ height: 80, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--app-color-bg-layout)' }}>
-                            <img
-                              src={product.imageUrl}
-                              alt=""
-                              style={{ width: '100%', height: 80, objectFit: 'cover' }}
-                            />
-                          </div>
-                        ) : (
-                          <div style={{
-                            height: 56,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            background: 'var(--app-color-bg-layout)',
-                          }}>
-                            <MedicineBoxOutlined style={{ fontSize: 26, color: 'var(--app-color-primary)', opacity: 0.45 }} />
-                          </div>
-                        )
-                      }
-                    >
-                      {/* Stock badge */}
-                      <Tag
-                        color={outOfStock ? 'red' : 'blue'}
-                        style={{ position: 'absolute', top: 4, insetInlineEnd: 4, fontSize: 10, margin: 0, lineHeight: '18px', padding: '0 5px' }}
-                      >
-                        {stock.toFixed(0)}
-                      </Tag>
 
-                      <Text strong ellipsis style={{ fontSize: 12, display: 'block', color: 'var(--app-color-text)' }}>
-                        {language === 'ar' ? product.nameAr : product.nameEn}
+          <Spin spinning={loading}>
+            {products.length === 0 ? (
+              <Empty description={t('searchProduct')} />
+            ) : posViewMode === 'list' ? (
+              <Table
+                dataSource={products}
+                columns={listColumns}
+                rowKey="id"
+                size="small"
+                pagination={false}
+                onRow={(product) => ({
+                  onClick: () => handleProductClick(product),
+                  style: { cursor: isOutOfStock(product) ? 'not-allowed' : 'pointer', opacity: isOutOfStock(product) ? 0.5 : 1 },
+                })}
+              />
+            ) : (
+              <Row gutter={[8, 8]}>
+                {products.map((product) => {
+                  const stock = getStock(product);
+                  const outOfStock = stock <= 0;
+                  return (
+                    <Col span={Math.floor(24 / posGridColumns)} key={product.id}>
+                      <Badge.Ribbon
+                        text={outOfStock ? t('outOfStock') : undefined}
+                        color={outOfStock ? 'red' : 'transparent'}
+                        style={outOfStock ? {} : { display: 'none' }}
+                      >
+                        <Card
+                          hoverable={!outOfStock}
+                          size="small"
+                          onClick={() => handleProductClick(product)}
+                          style={{
+                            textAlign: 'center',
+                            opacity: outOfStock ? 0.5 : 1,
+                            cursor: outOfStock ? 'not-allowed' : 'pointer',
+                            position: 'relative',
+                            borderRadius: 10,
+                            border: '1px solid var(--app-color-border)',
+                            overflow: 'hidden',
+                          }}
+                          styles={{ body: { padding: '10px 8px' } }}
+                          cover={
+                            product.imageUrl ? (
+                              <div style={{ height: 80, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--app-color-bg-layout)' }}>
+                                <img
+                                  src={product.imageUrl}
+                                  alt=""
+                                  style={{ width: '100%', height: 80, objectFit: 'cover' }}
+                                />
+                              </div>
+                            ) : (
+                              <div style={{
+                                height: 56,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                background: 'var(--app-color-bg-layout)',
+                              }}>
+                                <MedicineBoxOutlined style={{ fontSize: 26, color: 'var(--app-color-primary)', opacity: 0.45 }} />
+                              </div>
+                            )
+                          }
+                        >
+                          {/* Stock badge */}
+                          <Tag
+                            color={outOfStock ? 'red' : 'blue'}
+                            style={{ position: 'absolute', top: 4, insetInlineEnd: 4, fontSize: 10, margin: 0, lineHeight: '18px', padding: '0 5px' }}
+                          >
+                            {stock.toFixed(0)}
+                          </Tag>
+
+                          <Text strong ellipsis style={{ fontSize: 12, display: 'block', color: 'var(--app-color-text)' }}>
+                            {language === 'ar' ? product.nameAr : product.nameEn}
+                          </Text>
+                          <Text style={{ fontSize: 13, fontWeight: 700, color: 'var(--app-color-primary)' }}>
+                            SAR {parseFloat(product.defaultSellingPrice).toFixed(2)}
+                          </Text>
+                        </Card>
+                      </Badge.Ribbon>
+                    </Col>
+                  );
+                })}
+              </Row>
+            )}
+          </Spin>
+        </>
+      ) : (
+        <Spin spinning={servicesLoading}>
+          {services.length === 0 ? (
+            <Empty description={language === 'ar' ? 'لا توجد خدمات' : 'No services available'} />
+          ) : (
+            <Row gutter={[8, 8]}>
+              {services.map((svc) => (
+                <Col span={Math.floor(24 / posGridColumns)} key={svc.id}>
+                  <Card
+                    hoverable
+                    size="small"
+                    onClick={() => onAddService(svc)}
+                    style={{
+                      textAlign: 'center',
+                      cursor: 'pointer',
+                      borderRadius: 10,
+                      border: '1px solid var(--app-color-border)',
+                      borderLeft: '3px solid #13c2c2',
+                      overflow: 'hidden',
+                    }}
+                    styles={{ body: { padding: '10px 8px' } }}
+                    cover={
+                      <div style={{
+                        height: 56,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: 'linear-gradient(135deg, rgba(19,194,194,0.08), rgba(19,194,194,0.02))',
+                      }}>
+                        <MedicineBoxOutlined style={{ fontSize: 26, color: '#13c2c2', opacity: 0.8 }} />
+                      </div>
+                    }
+                  >
+                    <Tag color="cyan" style={{ position: 'absolute', top: 4, insetInlineEnd: 4, fontSize: 10, margin: 0, lineHeight: '18px', padding: '0 5px' }}>
+                      {language === 'ar' ? 'خدمة' : 'Service'}
+                    </Tag>
+                    <Text strong ellipsis style={{ fontSize: 12, display: 'block', color: 'var(--app-color-text)' }}>
+                      {language === 'ar' ? svc.nameAr : svc.nameEn}
+                    </Text>
+                    <Text style={{ fontSize: 13, fontWeight: 700, color: '#13c2c2' }}>
+                      SAR {parseFloat(svc.defaultPrice).toFixed(2)}
+                    </Text>
+                    {svc.durationMinutes && (
+                      <Text type="secondary" style={{ fontSize: 10, display: 'block' }}>
+                        {svc.durationMinutes} min
                       </Text>
-                      <Text style={{ fontSize: 13, fontWeight: 700, color: 'var(--app-color-primary)' }}>
-                        SAR {parseFloat(product.defaultSellingPrice).toFixed(2)}
-                      </Text>
-                    </Card>
-                  </Badge.Ribbon>
+                    )}
+                  </Card>
                 </Col>
-              );
-            })}
-          </Row>
-        )}
-      </Spin>
+              ))}
+            </Row>
+          )}
+        </Spin>
+      )}
     </div>
   );
 }

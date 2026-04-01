@@ -36,6 +36,8 @@ import { DemandForecastPage } from '@/pages/Reports/DemandForecastPage';
 import { DeadStockPage } from '@/pages/Reports/DeadStockPage';
 import { CustomerAnalyticsPage } from '@/pages/Reports/CustomerAnalyticsPage';
 import { ComparativeReportPage } from '@/pages/Reports/ComparativeReportPage';
+import { ServiceManagementPage } from '@/pages/Services/ServiceManagementPage';
+import { ServicesReportPage } from '@/pages/Reports/ServicesReportPage';
 
 function App() {
   const language = useUIStore((s) => s.language);
@@ -59,6 +61,7 @@ function App() {
               <Route path="inventory" element={<InventoryPage />} />
               <Route path="purchases" element={<PurchasesPage />} />
               <Route path="customers" element={<CustomersPage />} />
+              <Route path="services" element={<ServiceManagementPage />} />
               <Route path="reports" element={<Navigate to="/reports/sales" replace />} />
               <Route path="reports/sales" element={<SalesReportPage />} />
               <Route path="reports/profit" element={<ProfitReportPage />} />
@@ -73,6 +76,7 @@ function App() {
               <Route path="reports/dead-stock" element={<DeadStockPage />} />
               <Route path="reports/customer-analytics" element={<CustomerAnalyticsPage />} />
               <Route path="reports/comparative" element={<ComparativeReportPage />} />
+              <Route path="reports/services" element={<ServicesReportPage />} />
               <Route path="expenses" element={<ExpensesPage />} />
               <Route path="suppliers" element={<SuppliersPage />} />
               <Route path="branches" element={<BranchesPage />} />

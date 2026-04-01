@@ -3,7 +3,9 @@ import { Type } from 'class-transformer';
 import { PaymentMethod, OrderType } from '@pharmapos/shared';
 
 export class InvoiceItemDto {
-  @IsUUID() productId: string;
+  @IsString() @IsOptional() itemType?: string;
+  @IsUUID() @IsOptional() productId?: string;
+  @IsUUID() @IsOptional() serviceId?: string;
   @IsString() @IsNotEmpty() quantity: string;
   @IsString() @IsNotEmpty() cost: string;
   @IsString() @IsNotEmpty() suggestedPrice: string;
@@ -11,6 +13,10 @@ export class InvoiceItemDto {
   @IsString() @IsOptional() discountPct?: string;
   @IsBoolean() @IsOptional() isOverride?: boolean;
   @IsUUID() @IsOptional() batchId?: string;
+  @IsString() @IsOptional() patientName?: string;
+  @IsString() @IsOptional() patientPhone?: string;
+  @IsUUID() @IsOptional() performerId?: string;
+  @IsString() @IsOptional() serviceNotes?: string;
 }
 
 export class PaymentDto {
