@@ -32,6 +32,10 @@ import { CashFlowReportPage } from '@/pages/Reports/CashFlowReportPage';
 import { APReportPage } from '@/pages/Reports/APReportPage';
 import { BranchesPage } from '@/pages/Branches/BranchesPage';
 import { StockTransfersPage } from '@/pages/Branches/StockTransfersPage';
+import { DemandForecastPage } from '@/pages/Reports/DemandForecastPage';
+import { DeadStockPage } from '@/pages/Reports/DeadStockPage';
+import { CustomerAnalyticsPage } from '@/pages/Reports/CustomerAnalyticsPage';
+import { ComparativeReportPage } from '@/pages/Reports/ComparativeReportPage';
 
 function App() {
   const language = useUIStore((s) => s.language);
@@ -65,6 +69,10 @@ function App() {
               <Route path="reports/pnl" element={<PnLReportPage />} />
               <Route path="reports/cashflow" element={<CashFlowReportPage />} />
               <Route path="reports/ap" element={<APReportPage />} />
+              <Route path="reports/demand-forecast" element={<DemandForecastPage />} />
+              <Route path="reports/dead-stock" element={<DeadStockPage />} />
+              <Route path="reports/customer-analytics" element={<CustomerAnalyticsPage />} />
+              <Route path="reports/comparative" element={<ComparativeReportPage />} />
               <Route path="expenses" element={<ExpensesPage />} />
               <Route path="suppliers" element={<SuppliersPage />} />
               <Route path="branches" element={<BranchesPage />} />

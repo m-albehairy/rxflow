@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, InputNumber, Button, Typography, Space, Tag } from 'antd';
-import { DeleteOutlined, WarningOutlined } from '@ant-design/icons';
+import { DeleteOutlined, MinusOutlined, PlusOutlined, WarningOutlined } from '@ant-design/icons';
 import { useCartStore, CartItem as CartItemType } from '@/store/cart.store';
 import { useUIStore } from '@/store/ui.store';
 
@@ -17,6 +17,7 @@ export function CartItem({ item }: Props) {
 
   return (
     <Card size="small" style={{ marginBottom: 8 }}>
+      <style>{`.quantity-spinner-input .ant-input-number-input { text-align: center; }`}</style>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
         <div style={{ flex: 1 }}>
           <Text strong>
@@ -33,13 +34,25 @@ export function CartItem({ item }: Props) {
           </Text>
         </div>
         <Space>
-          <InputNumber
-            size="small"
-            min={1}
-            value={parseFloat(item.quantity)}
-            onChange={(val) => updateQuantity(item.productId, String(val || 1))}
-            style={{ width: 60 }}
-          />
+          <Space.Compact size="small">
+            <Button
+              icon={<MinusOutlined />}
+              disabled={parseFloat(item.quantity) <= 1}
+              onClick={() => updateQuantity(item.productId, String(parseFloat(item.quantity) - 1))}
+            />
+            <InputNumber
+              controls={false}
+              min={1}
+              value={parseFloat(item.quantity)}
+              onChange={(val) => updateQuantity(item.productId, String(val || 1))}
+              style={{ width: 44, textAlign: 'center' }}
+              rootClassName="quantity-spinner-input"
+            />
+            <Button
+              icon={<PlusOutlined />}
+              onClick={() => updateQuantity(item.productId, String(parseFloat(item.quantity) + 1))}
+            />
+          </Space.Compact>
           <Text strong>{parseFloat(item.lineTotal).toFixed(2)}</Text>
           <Button
             size="small"

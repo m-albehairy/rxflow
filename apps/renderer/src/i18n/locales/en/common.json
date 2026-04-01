@@ -103,5 +103,17 @@
   "dash_noExpiry": "No items expiring soon",
   "dash_reorderLevel": "Reorder",
   "dash_expiryDate": "Expiry",
-  "dash_balance": "Balance"
+  "dash_balance": "Balance",
+  "demandForecast": "Demand Forecasting",
+  "deadStock": "Dead Stock",
+  "customerAnalytics": "Customer Analytics",
+  "comparativeReport": "Comparative Report",
+  "dash_cashierPerf": "Cashier Performance (Today)",
+  "dash_expiryCalendar": "Expiry Calendar (Next 90 Days)",
+  "dash_stockValue": "Stock Value Distribution",
+  "dash_hourlySales": "Today's Sales by Hour",
+  "dash_noCashierData": "No cashier data for today",
+  "dash_noExpiryCalendar": "No items expiring in next 90 days",
+  "dash_week": "Week",
+  "dash_batchesExpiring": "Batches"
 }

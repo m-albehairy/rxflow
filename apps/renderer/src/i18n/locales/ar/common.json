@@ -103,5 +103,17 @@
   "dash_noExpiry": "لا توجد أصناف قريبة الانتهاء",
   "dash_reorderLevel": "حد الطلب",
   "dash_expiryDate": "تاريخ الانتهاء",
-  "dash_balance": "الرصيد"
+  "dash_balance": "الرصيد",
+  "demandForecast": "التنبؤ بالطلب",
+  "deadStock": "المخزون الراكد",
+  "customerAnalytics": "تحليلات العملاء",
+  "comparativeReport": "التقرير المقارن",
+  "dash_cashierPerf": "أداء الصرافين (اليوم)",
+  "dash_expiryCalendar": "تقويم انتهاء الصلاحية (90 يوم)",
+  "dash_stockValue": "توزيع قيمة المخزون",
+  "dash_hourlySales": "مبيعات اليوم بالساعة",
+  "dash_noCashierData": "لا توجد بيانات صرافين لليوم",
+  "dash_noExpiryCalendar": "لا توجد أصناف تنتهي صلاحيتها خلال 90 يوم",
+  "dash_week": "الأسبوع",
+  "dash_batchesExpiring": "الدفعات"
 }

@@ -25,6 +25,10 @@ import {
   SwapOutlined,
   BranchesOutlined,
   LogoutOutlined,
+  ThunderboltOutlined,
+  StopOutlined,
+  PieChartOutlined,
+  SlidersOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -189,6 +193,10 @@ export function Sidebar() {
                   { key: '/reports/pnl', icon: <AccountBookOutlined />, label: t('pnlReport', 'P&L') },
                   { key: '/reports/cashflow', icon: <FundOutlined />, label: t('cashFlowReport', 'Cash Flow') },
                   { key: '/reports/ap', icon: <BankOutlined />, label: t('apReport', 'Payables') },
+                  { key: '/reports/demand-forecast', icon: <ThunderboltOutlined />, label: t('demandForecast', 'Demand Forecast') },
+                  { key: '/reports/dead-stock', icon: <StopOutlined />, label: t('deadStock', 'Dead Stock') },
+                  { key: '/reports/customer-analytics', icon: <PieChartOutlined />, label: t('customerAnalytics', 'Customer Analytics') },
+                  { key: '/reports/comparative', icon: <SlidersOutlined />, label: t('comparativeReport', 'Comparative') },
                 ],
               } as ItemType,
               { type: 'divider' as const } as ItemType,

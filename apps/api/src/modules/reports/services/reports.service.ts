@@ -351,6 +351,472 @@ export class ReportsService {
     return { periods, totals };
   }
 
+  async dashboardWidgets() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = today.toISOString();
+
+    const [cashierPerformance, expiryCalendar, stockValueByCategory, hourlySales] = await Promise.all([
+      // Cashier performance for today's shifts
+      this.dataSource.query(
+        `SELECT u.full_name as cashier_name, u.full_name_ar as cashier_name_ar,
+                COUNT(i.id) as invoice_count,
+                COALESCE(SUM(CAST(i.total AS numeric)), 0) as total_revenue,
+                COALESCE(SUM(CAST(i.profit AS numeric)), 0) as total_profit
+         FROM shifts s
+         JOIN users u ON s.cashier_id = u.id
+         LEFT JOIN invoices i ON i.cashier_id = s.cashier_id
+           AND i.deleted_at IS NULL AND i.status != 'VOIDED'
+           AND i.created_at >= s.opened_at
+           AND (s.closed_at IS NULL OR i.created_at <= s.closed_at)
+         WHERE s.deleted_at IS NULL AND s.opened_at >= $1
+         GROUP BY u.id, u.full_name, u.full_name_ar`,
+        [todayStr],
+      ),
+
+      // Batches expiring in next 90 days grouped by ISO week
+      this.dataSource.query(
+        `SELECT TO_CHAR(DATE_TRUNC('week', b.expiry_date), 'IYYY-"W"IW') as week_label,
+                DATE_TRUNC('week', b.expiry_date) as week_start,
+                COUNT(*) as batch_count,
+                SUM(CAST(b.remaining_qty AS numeric)) as total_qty
+         FROM batches b
+         WHERE b.deleted_at IS NULL
+           AND CAST(b.remaining_qty AS numeric) > 0
+           AND b.expiry_date IS NOT NULL
+           AND b.expiry_date >= CURRENT_DATE
+           AND b.expiry_date <= CURRENT_DATE + INTERVAL '90 days'
+         GROUP BY DATE_TRUNC('week', b.expiry_date)
+         ORDER BY week_start ASC`,
+      ),
+
+      // Stock value by category
+      this.dataSource.query(
+        `SELECT COALESCE(c.name_en, 'Uncategorized') as category_en,
+                COALESCE(c.name_ar, 'بدون تصنيف') as category_ar,
+                COUNT(DISTINCT p.id) as product_count,
+                COALESCE(SUM(CAST(i.total_value AS numeric)), 0) as total_value
+         FROM inventories i
+         JOIN products p ON i.product_id = p.id
+         LEFT JOIN categories c ON p.category_id = c.id
+         WHERE i.deleted_at IS NULL
+         GROUP BY c.id, c.name_en, c.name_ar
+         ORDER BY total_value DESC`,
+      ),
+
+      // Hourly sales for today
+      this.dataSource.query(
+        `SELECT EXTRACT(HOUR FROM created_at)::int as hour,
+                COUNT(*) as invoice_count,
+                COALESCE(SUM(CAST(total AS numeric)), 0) as revenue
+         FROM invoices
+         WHERE deleted_at IS NULL AND status != 'VOIDED'
+           AND created_at >= $1
+         GROUP BY EXTRACT(HOUR FROM created_at)
+         ORDER BY hour ASC`,
+        [todayStr],
+      ),
+    ]);
+
+    return {
+      cashierPerformance: cashierPerformance.map((r: any) => ({
+        ...r,
+        invoice_count: parseInt(r.invoice_count || '0'),
+        total_revenue: parseFloat(r.total_revenue || '0'),
+        total_profit: parseFloat(r.total_profit || '0'),
+      })),
+      expiryCalendar: expiryCalendar.map((r: any) => ({
+        ...r,
+        batch_count: parseInt(r.batch_count || '0'),
+        total_qty: parseFloat(r.total_qty || '0'),
+      })),
+      stockValueByCategory: stockValueByCategory.map((r: any) => ({
+        ...r,
+        product_count: parseInt(r.product_count || '0'),
+        total_value: parseFloat(r.total_value || '0'),
+      })),
+      hourlySales: hourlySales.map((r: any) => ({
+        hour: parseInt(r.hour),
+        invoice_count: parseInt(r.invoice_count || '0'),
+        revenue: parseFloat(r.revenue || '0'),
+      })),
+    };
+  }
+
+  async demandForecast(params: { categoryId?: string; urgency?: string }) {
+    let query = `
+      SELECT p.id as product_id, p.name_en, p.name_ar, p.barcode,
+             COALESCE(c.name_en, 'Uncategorized') as category_en,
+             COALESCE(c.name_ar, 'بدون تصنيف') as category_ar,
+             CAST(i.quantity AS numeric) as current_qty,
+             CAST(i.avg_cost AS numeric) as avg_cost,
+             COALESCE(sales.avg_daily_sales, 0) as avg_daily_sales,
+             CAST(i.reorder_level AS numeric) as reorder_level
+      FROM inventories i
+      JOIN products p ON i.product_id = p.id
+      LEFT JOIN categories c ON p.category_id = c.id
+      LEFT JOIN LATERAL (
+        SELECT SUM(CAST(ii.quantity AS numeric)) / 30.0 as avg_daily_sales
+        FROM invoice_items ii
+        JOIN invoices inv ON ii.invoice_id = inv.id
+        WHERE ii.product_id = p.id
+          AND inv.deleted_at IS NULL AND inv.status != 'VOIDED'
+          AND inv.created_at >= NOW() - INTERVAL '30 days'
+      ) sales ON true
+      WHERE i.deleted_at IS NULL AND p.is_active = true
+    `;
+    const queryParams: unknown[] = [];
+    let paramIndex = 1;
+
+    if (params.categoryId) {
+      query += ` AND p.category_id = $${paramIndex++}`;
+      queryParams.push(params.categoryId);
+    }
+
+    query += ` ORDER BY CASE WHEN COALESCE(sales.avg_daily_sales, 0) = 0 THEN 9999 ELSE CAST(i.quantity AS numeric) / sales.avg_daily_sales END ASC`;
+
+    const rows = await this.dataSource.query(query, queryParams);
+
+    const results = rows.map((r: any) => {
+      const currentQty = parseFloat(r.current_qty || '0');
+      const avgCost = parseFloat(r.avg_cost || '0');
+      const avgDailySales = parseFloat(r.avg_daily_sales || '0');
+      const reorderLevel = parseFloat(r.reorder_level || '0');
+      const daysOfStock = avgDailySales > 0 ? currentQty / avgDailySales : 9999;
+      const suggestedQty = Math.max(0, (avgDailySales * 14) - currentQty + reorderLevel);
+      const urgency = daysOfStock <= 7 ? 'critical' : daysOfStock <= 14 ? 'warning' : 'ok';
+
+      return {
+        product_id: r.product_id,
+        name_en: r.name_en,
+        name_ar: r.name_ar,
+        barcode: r.barcode,
+        category_en: r.category_en,
+        category_ar: r.category_ar,
+        current_qty: currentQty,
+        avg_cost: avgCost,
+        avg_daily_sales: parseFloat(avgDailySales.toFixed(4)),
+        days_of_stock: parseFloat(daysOfStock.toFixed(2)),
+        reorder_level: reorderLevel,
+        suggested_qty: parseFloat(suggestedQty.toFixed(4)),
+        urgency,
+      };
+    });
+
+    if (params.urgency) {
+      return results.filter((r: any) => r.urgency === params.urgency);
+    }
+
+    return results;
+  }
+
+  async deadStock(days: number = 30) {
+    const rows = await this.dataSource.query(
+      `SELECT p.id as product_id, p.name_en, p.name_ar, p.barcode,
+              COALESCE(c.name_en, 'Uncategorized') as category_en,
+              COALESCE(c.name_ar, 'بدون تصنيف') as category_ar,
+              CAST(i.quantity AS numeric) as current_qty,
+              CAST(i.avg_cost AS numeric) as avg_cost,
+              i.last_sale_date,
+              CASE
+                WHEN i.last_sale_date IS NULL THEN EXTRACT(DAY FROM NOW() - p.created_at)::int
+                ELSE EXTRACT(DAY FROM NOW() - i.last_sale_date)::int
+              END as days_idle
+       FROM inventories i
+       JOIN products p ON i.product_id = p.id
+       LEFT JOIN categories c ON p.category_id = c.id
+       WHERE i.deleted_at IS NULL
+         AND CAST(i.quantity AS numeric) > 0
+         AND (
+           i.last_sale_date IS NULL
+           OR i.last_sale_date < NOW() - MAKE_INTERVAL(days => $1)
+         )
+         AND NOT EXISTS (
+           SELECT 1 FROM invoice_items ii
+           JOIN invoices inv ON ii.invoice_id = inv.id
+           WHERE ii.product_id = p.id
+             AND inv.deleted_at IS NULL AND inv.status != 'VOIDED'
+             AND inv.created_at >= NOW() - MAKE_INTERVAL(days => $1)
+         )
+       ORDER BY days_idle DESC`,
+      [days],
+    );
+
+    const items = rows.map((r: any) => {
+      const currentQty = parseFloat(r.current_qty || '0');
+      const avgCost = parseFloat(r.avg_cost || '0');
+      return {
+        product_id: r.product_id,
+        name_en: r.name_en,
+        name_ar: r.name_ar,
+        barcode: r.barcode,
+        category_en: r.category_en,
+        category_ar: r.category_ar,
+        current_qty: currentQty,
+        avg_cost: avgCost,
+        tied_up_value: parseFloat((currentQty * avgCost).toFixed(4)),
+        last_sale_date: r.last_sale_date,
+        days_idle: parseInt(r.days_idle || '0'),
+      };
+    });
+
+    const summary = {
+      total_items: items.length,
+      total_tied_up_value: parseFloat(items.reduce((sum: number, i: any) => sum + i.tied_up_value, 0).toFixed(4)),
+    };
+
+    return { items, summary };
+  }
+
+  async customerAnalytics(customerId?: string) {
+    if (customerId) {
+      // Single customer detail
+      const [customerRows, preferredProducts, monthlySpending] = await Promise.all([
+        this.dataSource.query(
+          `SELECT c.name, c.name_ar, c.phone,
+                  COALESCE(c.invoice_count, 0) as invoice_count,
+                  COALESCE(CAST(c.total_purchases AS numeric), 0) as total_spent
+           FROM customers c
+           WHERE c.id = $1 AND c.deleted_at IS NULL`,
+          [customerId],
+        ),
+        this.dataSource.query(
+          `SELECT p.name_en, p.name_ar,
+                  SUM(CAST(ii.quantity AS numeric)) as total_qty,
+                  SUM(CAST(ii.total AS numeric)) as total_revenue
+           FROM invoice_items ii
+           JOIN invoices inv ON ii.invoice_id = inv.id
+           JOIN products p ON ii.product_id = p.id
+           WHERE inv.customer_id = $1 AND inv.deleted_at IS NULL AND inv.status != 'VOIDED'
+           GROUP BY p.id, p.name_en, p.name_ar
+           ORDER BY total_qty DESC
+           LIMIT 10`,
+          [customerId],
+        ),
+        this.dataSource.query(
+          `SELECT TO_CHAR(DATE_TRUNC('month', inv.created_at), 'YYYY-MM') as month,
+                  SUM(CAST(inv.total AS numeric)) as total_spent,
+                  COUNT(*) as invoice_count
+           FROM invoices inv
+           WHERE inv.customer_id = $1 AND inv.deleted_at IS NULL AND inv.status != 'VOIDED'
+             AND inv.created_at >= NOW() - INTERVAL '12 months'
+           GROUP BY DATE_TRUNC('month', inv.created_at)
+           ORDER BY month ASC`,
+          [customerId],
+        ),
+      ]);
+
+      if (!customerRows.length) {
+        return { customer: null, preferredProducts: [], monthlySpending: [] };
+      }
+
+      const c = customerRows[0];
+      const totalSpent = parseFloat(c.total_spent || '0');
+      const invoiceCount = parseInt(c.invoice_count || '0');
+
+      return {
+        customer: {
+          name: c.name,
+          name_ar: c.name_ar,
+          phone: c.phone,
+          invoice_count: invoiceCount,
+          total_spent: totalSpent,
+          avg_basket: invoiceCount > 0 ? parseFloat((totalSpent / invoiceCount).toFixed(4)) : 0,
+        },
+        preferredProducts: preferredProducts.map((r: any) => ({
+          name_en: r.name_en,
+          name_ar: r.name_ar,
+          total_qty: parseFloat(r.total_qty || '0'),
+          total_revenue: parseFloat(r.total_revenue || '0'),
+        })),
+        monthlySpending: monthlySpending.map((r: any) => ({
+          month: r.month,
+          total_spent: parseFloat(r.total_spent || '0'),
+          invoice_count: parseInt(r.invoice_count || '0'),
+        })),
+      };
+    }
+
+    // Overview mode
+    const [segmentRows, topCustomers, overviewRows] = await Promise.all([
+      this.dataSource.query(
+        `SELECT
+           CASE
+             WHEN CAST(COALESCE(total_purchases, '0') AS numeric) > 10000 THEN 'high'
+             WHEN CAST(COALESCE(total_purchases, '0') AS numeric) > 1000 THEN 'medium'
+             ELSE 'low'
+           END as segment,
+           COUNT(*) as customer_count,
+           COALESCE(SUM(CAST(total_purchases AS numeric)), 0) as total_revenue
+         FROM customers
+         WHERE deleted_at IS NULL
+         GROUP BY segment
+         ORDER BY total_revenue DESC`,
+      ),
+      this.dataSource.query(
+        `SELECT c.id, c.name, c.name_ar, c.phone,
+                COALESCE(c.invoice_count, 0) as invoice_count,
+                COALESCE(CAST(c.total_purchases AS numeric), 0) as total_spent,
+                (SELECT MAX(inv.created_at)
+                 FROM invoices inv
+                 WHERE inv.customer_id = c.id AND inv.deleted_at IS NULL AND inv.status != 'VOIDED'
+                ) as last_purchase
+         FROM customers c
+         WHERE c.deleted_at IS NULL
+         ORDER BY CAST(COALESCE(c.total_purchases, '0') AS numeric) DESC
+         LIMIT 20`,
+      ),
+      this.dataSource.query(
+        `SELECT COUNT(*) as total_customers,
+                COALESCE(AVG(CAST(COALESCE(total_purchases, '0') AS numeric) / NULLIF(CAST(COALESCE(invoice_count, '0') AS numeric), 0)), 0) as avg_basket_size,
+                COALESCE(AVG(CAST(COALESCE(invoice_count, '0') AS numeric)), 0) as avg_purchase_frequency
+         FROM customers
+         WHERE deleted_at IS NULL`,
+      ),
+    ]);
+
+    return {
+      segments: segmentRows.map((r: any) => ({
+        segment: r.segment,
+        customer_count: parseInt(r.customer_count || '0'),
+        total_revenue: parseFloat(r.total_revenue || '0'),
+      })),
+      topCustomers: topCustomers.map((r: any) => {
+        const totalSpent = parseFloat(r.total_spent || '0');
+        const invoiceCount = parseInt(r.invoice_count || '0');
+        return {
+          id: r.id,
+          name: r.name,
+          name_ar: r.name_ar,
+          phone: r.phone,
+          invoice_count: invoiceCount,
+          total_spent: totalSpent,
+          avg_basket: invoiceCount > 0 ? parseFloat((totalSpent / invoiceCount).toFixed(4)) : 0,
+          last_purchase: r.last_purchase,
+        };
+      }),
+      overview: {
+        total_customers: parseInt(overviewRows[0]?.total_customers || '0'),
+        avg_basket_size: parseFloat(parseFloat(overviewRows[0]?.avg_basket_size || '0').toFixed(4)),
+        avg_purchase_frequency: parseFloat(parseFloat(overviewRows[0]?.avg_purchase_frequency || '0').toFixed(2)),
+      },
+    };
+  }
+
+  async comparativeReport(type: string = 'mom') {
+    const now = new Date();
+    let currentFrom: Date, currentTo: Date, previousFrom: Date, previousTo: Date;
+    let currentLabel: string, previousLabel: string;
+
+    if (type === 'yoy') {
+      const currentYear = now.getFullYear();
+      currentFrom = new Date(currentYear, 0, 1);
+      currentTo = new Date(currentYear, 11, 31, 23, 59, 59, 999);
+      previousFrom = new Date(currentYear - 1, 0, 1);
+      previousTo = new Date(currentYear - 1, 11, 31, 23, 59, 59, 999);
+      currentLabel = `${currentYear}`;
+      previousLabel = `${currentYear - 1}`;
+    } else if (type === 'qoq') {
+      const currentQuarter = Math.floor(now.getMonth() / 3);
+      currentFrom = new Date(now.getFullYear(), currentQuarter * 3, 1);
+      currentTo = new Date(now.getFullYear(), currentQuarter * 3 + 3, 0, 23, 59, 59, 999);
+      const prevQuarterMonth = currentQuarter * 3 - 3;
+      const prevYear = prevQuarterMonth < 0 ? now.getFullYear() - 1 : now.getFullYear();
+      const prevMonth = prevQuarterMonth < 0 ? prevQuarterMonth + 12 : prevQuarterMonth;
+      previousFrom = new Date(prevYear, prevMonth, 1);
+      previousTo = new Date(prevYear, prevMonth + 3, 0, 23, 59, 59, 999);
+      currentLabel = `Q${currentQuarter + 1} ${now.getFullYear()}`;
+      previousLabel = `Q${prevQuarterMonth < 0 ? 4 : currentQuarter} ${prevYear}`;
+    } else {
+      // mom (default)
+      currentFrom = new Date(now.getFullYear(), now.getMonth(), 1);
+      currentTo = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+      previousFrom = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      previousTo = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+      currentLabel = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      previousLabel = `${previousFrom.getFullYear()}-${String(previousFrom.getMonth() + 1).padStart(2, '0')}`;
+    }
+
+    const periodQuery = `
+      SELECT
+        COALESCE(SUM(CAST(total AS numeric)), 0) as revenue,
+        COALESCE(SUM(CAST(total_cost AS numeric)), 0) as cost,
+        COALESCE(SUM(CAST(profit AS numeric)), 0) as profit,
+        COUNT(*) as invoice_count,
+        CASE WHEN COUNT(*) > 0
+          THEN COALESCE(SUM(CAST(total AS numeric)), 0) / COUNT(*)
+          ELSE 0
+        END as avg_ticket
+      FROM invoices
+      WHERE deleted_at IS NULL AND status NOT IN ('VOIDED', 'DRAFT')
+        AND created_at >= $1 AND created_at <= $2
+    `;
+
+    const topProductsQuery = `
+      SELECT p.name_en, p.name_ar,
+             SUM(CAST(ii.quantity AS numeric)) as total_qty,
+             SUM(CAST(ii.total AS numeric)) as total_revenue
+      FROM invoice_items ii
+      JOIN invoices inv ON ii.invoice_id = inv.id
+      JOIN products p ON ii.product_id = p.id
+      WHERE inv.deleted_at IS NULL AND inv.status NOT IN ('VOIDED', 'DRAFT')
+        AND inv.created_at >= $1 AND inv.created_at <= $2
+      GROUP BY p.id, p.name_en, p.name_ar
+      ORDER BY total_revenue DESC
+      LIMIT 10
+    `;
+
+    const [currentPeriod, previousPeriod, currentProducts, previousProducts] = await Promise.all([
+      this.dataSource.query(periodQuery, [currentFrom.toISOString(), currentTo.toISOString()]),
+      this.dataSource.query(periodQuery, [previousFrom.toISOString(), previousTo.toISOString()]),
+      this.dataSource.query(topProductsQuery, [currentFrom.toISOString(), currentTo.toISOString()]),
+      this.dataSource.query(topProductsQuery, [previousFrom.toISOString(), previousTo.toISOString()]),
+    ]);
+
+    const parsePeriod = (row: any, label: string, from: Date, to: Date) => ({
+      label,
+      from: from.toISOString(),
+      to: to.toISOString(),
+      revenue: parseFloat(row.revenue || '0'),
+      cost: parseFloat(row.cost || '0'),
+      profit: parseFloat(row.profit || '0'),
+      invoice_count: parseInt(row.invoice_count || '0'),
+      avg_ticket: parseFloat(parseFloat(row.avg_ticket || '0').toFixed(4)),
+    });
+
+    const current = parsePeriod(currentPeriod[0], currentLabel, currentFrom, currentTo);
+    const previous = parsePeriod(previousPeriod[0], previousLabel, previousFrom, previousTo);
+
+    const pctChange = (curr: number, prev: number) => {
+      if (prev === 0) return curr === 0 ? 0 : 100;
+      return parseFloat((((curr - prev) / prev) * 100).toFixed(2));
+    };
+
+    const parseProducts = (rows: any[]) =>
+      rows.map((r: any) => ({
+        name_en: r.name_en,
+        name_ar: r.name_ar,
+        total_qty: parseFloat(r.total_qty || '0'),
+        total_revenue: parseFloat(r.total_revenue || '0'),
+      }));
+
+    return {
+      current,
+      previous,
+      changes: {
+        revenue_pct: pctChange(current.revenue, previous.revenue),
+        cost_pct: pctChange(current.cost, previous.cost),
+        profit_pct: pctChange(current.profit, previous.profit),
+        invoice_count_pct: pctChange(current.invoice_count, previous.invoice_count),
+        avg_ticket_pct: pctChange(current.avg_ticket, previous.avg_ticket),
+      },
+      topProducts: {
+        current: parseProducts(currentProducts),
+        previous: parseProducts(previousProducts),
+      },
+    };
+  }
+
   async apReport(supplierId?: string) {
     let query = `
       SELECT s.id, s.name_en, s.name_ar, s.phone, s.current_balance, s.payment_term_days,

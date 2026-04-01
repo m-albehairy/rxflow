@@ -53,4 +53,34 @@ export class ReportsController {
   async apReport(@Query('supplierId') supplierId?: string) {
     return this.reportsService.apReport(supplierId);
   }
+
+  @Get('dashboard-widgets')
+  @RequirePermission('reports:view')
+  async dashboardWidgets() {
+    return this.reportsService.dashboardWidgets();
+  }
+
+  @Get('demand-forecast')
+  @RequirePermission('reports:view')
+  async demandForecast(@Query('categoryId') categoryId?: string, @Query('urgency') urgency?: string) {
+    return this.reportsService.demandForecast({ categoryId, urgency });
+  }
+
+  @Get('dead-stock')
+  @RequirePermission('reports:view')
+  async deadStock(@Query('days') days?: string) {
+    return this.reportsService.deadStock(days ? parseInt(days) : 30);
+  }
+
+  @Get('customer-analytics')
+  @RequirePermission('reports:view')
+  async customerAnalytics(@Query('customerId') customerId?: string) {
+    return this.reportsService.customerAnalytics(customerId);
+  }
+
+  @Get('comparative')
+  @RequirePermission('reports:view')
+  async comparativeReport(@Query('type') type?: string) {
+    return this.reportsService.comparativeReport(type || 'mom');
+  }
 }

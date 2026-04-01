@@ -23,6 +23,7 @@ import {
   ArrowDownOutlined,
   AlertOutlined,
   InboxOutlined,
+  UserOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import {
@@ -39,9 +40,12 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
+  ComposedChart,
+  Line,
 } from 'recharts';
 import dayjs from 'dayjs';
 import { reportsApi } from '@/api/reports.api';
+import apiClient from '@/api/client';
 import { inventoryApi } from '@/api/inventory.api';
 import { useAuthStore } from '@/store/auth.store';
 
@@ -78,6 +82,7 @@ export function DashboardPage() {
   const [lowStockItems, setLowStockItems] = useState<any[]>([]);
   const [nearExpiryItems, setNearExpiryItems] = useState<any[]>([]);
   const [arData, setArData] = useState<any[]>([]);
+  const [widgets, setWidgets] = useState<any>(null);
 
   useEffect(() => {
     loadDashboard();
@@ -89,13 +94,14 @@ export function DashboardPage() {
       const today = dayjs().format('YYYY-MM-DD');
       const weekAgo = dayjs().subtract(7, 'day').format('YYYY-MM-DD');
 
-      const [salesRes, profitRes, lowStockRes, nearExpiryRes, arRes]: any[] =
+      const [salesRes, profitRes, lowStockRes, nearExpiryRes, arRes, widgetsRes]: any[] =
         await Promise.allSettled([
           reportsApi.sales({ from: today, to: today }),
           reportsApi.profit({ from: weekAgo, to: today }),
           inventoryApi.lowStock(),
           inventoryApi.nearExpiry(30),
           reportsApi.ar(),
+          apiClient.get('/reports/dashboard-widgets'),
         ]);
 
       if (salesRes.status === 'fulfilled') {
@@ -117,6 +123,10 @@ export function DashboardPage() {
       if (arRes.status === 'fulfilled') {
         const d = arRes.value?.data || arRes.value;
         setArData(Array.isArray(d) ? d : []);
+      }
+      if (widgetsRes.status === 'fulfilled') {
+        const d = widgetsRes.value?.data || widgetsRes.value;
+        setWidgets(d);
       }
     } catch {
       // best-effort
@@ -186,6 +196,47 @@ export function DashboardPage() {
       revenue: parseFloat(p.total_revenue || '0'),
     }));
   }, [topProducts, isAr]);
+
+  // Cashier performance data
+  const cashierData = useMemo(() => {
+    return (widgets?.cashierPerformance || []).map((c: any) => ({
+      name: isAr ? (c.cashier_name_ar || c.cashier_name) : c.cashier_name,
+      revenue: parseFloat(c.total_revenue || '0'),
+      profit: parseFloat(c.total_profit || '0'),
+      invoices: parseInt(c.invoice_count || '0'),
+    }));
+  }, [widgets, isAr]);
+
+  // Stock value by category data (top 8)
+  const stockCategoryData = useMemo(() => {
+    return (widgets?.stockValueByCategory || []).slice(0, 8).map((c: any) => ({
+      name: isAr ? (c.category_ar || c.category_en) : c.category_en,
+      value: parseFloat(c.total_value || '0'),
+      count: parseInt(c.product_count || '0'),
+    }));
+  }, [widgets, isAr]);
+
+  // Hourly sales data
+  const hourlyData = useMemo(() => {
+    return (widgets?.hourlySales || []).map((h: any) => ({
+      hour: parseInt(h.hour),
+      label: `${parseInt(h.hour) % 12 || 12}${parseInt(h.hour) >= 12 ? 'PM' : 'AM'}`,
+      revenue: parseFloat(h.revenue || '0'),
+      invoices: parseInt(h.invoice_count || '0'),
+    }));
+  }, [widgets]);
+
+  // Expiry calendar data
+  const expiryCalendarData = useMemo(() => {
+    return (widgets?.expiryCalendar || []).map((e: any, idx: number) => ({
+      key: idx,
+      week_label: e.week_label,
+      week_start: e.week_start,
+      batch_count: parseInt(e.batch_count || '0'),
+      total_qty: parseInt(e.total_qty || '0'),
+      _weekIndex: idx,
+    }));
+  }, [widgets]);
 
   const displayName =
     isAr && user?.fullNameAr
@@ -414,6 +465,10 @@ export function DashboardPage() {
 
   return (
     <div style={{ padding: '8px 0' }}>
+      <style>{`
+        .expiry-row-red td { background: rgba(239, 68, 68, 0.06) !important; }
+        .expiry-row-orange td { background: rgba(245, 158, 11, 0.06) !important; }
+      `}</style>
       {/* Welcome header */}
       <div style={{ marginBottom: 20 }}>
         <Title level={3} style={{ marginBottom: 4 }}>
@@ -669,6 +724,295 @@ export function DashboardPage() {
           </Col>
         </Row>
       )}
+
+      {/* ===== CASHIER PERFORMANCE + STOCK VALUE ===== */}
+      <Row gutter={[14, 14]} style={{ marginBottom: 20 }}>
+        {/* Cashier Performance */}
+        <Col xs={24} lg={12}>
+          <Card
+            title={
+              <span style={{ fontSize: 15, fontWeight: 600 }}>
+                {t('dash_cashierPerf', 'Cashier Performance (Today)')}
+              </span>
+            }
+            style={cardStyle}
+          >
+            {cashierData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart
+                  data={cashierData}
+                  layout="vertical"
+                  margin={{ left: 10, right: 20, top: 5, bottom: 5 }}
+                >
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="var(--app-color-border, #f0f0f0)"
+                    horizontal={false}
+                  />
+                  <XAxis
+                    type="number"
+                    tickFormatter={(v) =>
+                      v >= 1000 ? `${(v / 1000).toFixed(0)}k` : `${v}`
+                    }
+                    tick={{ fontSize: 11 }}
+                  />
+                  <YAxis
+                    type="category"
+                    dataKey="name"
+                    width={120}
+                    tick={{ fontSize: 11 }}
+                  />
+                  <Tooltip
+                    formatter={(v: any) => formatCurrency(v)}
+                    contentStyle={{
+                      borderRadius: 8,
+                      border: '1px solid var(--app-color-border, #e2e8f0)',
+                    }}
+                  />
+                  <Bar
+                    dataKey="revenue"
+                    fill="#7C3AED"
+                    radius={[0, 6, 6, 0]}
+                    name={t('todaysRevenue')}
+                    barSize={22}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div
+                style={{
+                  height: 300,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexDirection: 'column',
+                  gap: 8,
+                }}
+              >
+                <UserOutlined style={{ fontSize: 40, color: '#bfbfbf' }} />
+                <Text type="secondary">{t('dash_noCashierData', 'No cashier data for today')}</Text>
+              </div>
+            )}
+          </Card>
+        </Col>
+
+        {/* Stock Value Distribution */}
+        <Col xs={24} lg={12}>
+          <Card
+            title={
+              <span style={{ fontSize: 15, fontWeight: 600 }}>
+                {t('dash_stockValue', 'Stock Value Distribution')}
+              </span>
+            }
+            style={cardStyle}
+          >
+            {stockCategoryData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={stockCategoryData}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={55}
+                    outerRadius={105}
+                    paddingAngle={3}
+                    label={({ name, percent }: any) =>
+                      `${(name || '').slice(0, 14)} ${((percent || 0) * 100).toFixed(0)}%`
+                    }
+                    labelLine={{ strokeWidth: 1 }}
+                  >
+                    {stockCategoryData.map((_: any, idx: number) => (
+                      <Cell key={idx} fill={CHART_COLORS[idx % CHART_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(v: any) => formatCurrency(v)}
+                    contentStyle={{
+                      borderRadius: 8,
+                      border: '1px solid var(--app-color-border, #e2e8f0)',
+                    }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div
+                style={{
+                  height: 300,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Text type="secondary">{t('noData')}</Text>
+              </div>
+            )}
+          </Card>
+        </Col>
+      </Row>
+
+      {/* ===== HOURLY SALES + EXPIRY CALENDAR ===== */}
+      <Row gutter={[14, 14]} style={{ marginBottom: 20 }}>
+        {/* Hourly Sales Distribution */}
+        <Col xs={24} lg={14}>
+          <Card
+            title={
+              <span style={{ fontSize: 15, fontWeight: 600 }}>
+                {t('dash_hourlySales', "Today's Sales by Hour")}
+              </span>
+            }
+            style={cardStyle}
+          >
+            {hourlyData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <ComposedChart data={hourlyData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="dashHourlyRevGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#4F46E5" stopOpacity={0.15} />
+                      <stop offset="95%" stopColor="#4F46E5" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--app-color-border, #f0f0f0)" />
+                  <XAxis dataKey="label" tick={{ fontSize: 11 }} />
+                  <YAxis
+                    yAxisId="left"
+                    tickFormatter={(v) =>
+                      v >= 1000 ? `${(v / 1000).toFixed(0)}k` : `${v}`
+                    }
+                    tick={{ fontSize: 11 }}
+                  />
+                  <YAxis
+                    yAxisId="right"
+                    orientation="right"
+                    tick={{ fontSize: 11 }}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      borderRadius: 8,
+                      border: '1px solid var(--app-color-border, #e2e8f0)',
+                    }}
+                    formatter={(v: any, name: any) =>
+                      name === t('todaysRevenue') ? formatCurrency(v) : formatNumber(v)
+                    }
+                  />
+                  <Legend
+                    iconType="circle"
+                    iconSize={8}
+                    wrapperStyle={{ fontSize: 12, paddingTop: 8 }}
+                  />
+                  <Area
+                    yAxisId="left"
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke="#4F46E5"
+                    fill="url(#dashHourlyRevGrad)"
+                    strokeWidth={2.5}
+                    name={t('todaysRevenue')}
+                    dot={false}
+                    activeDot={{ r: 5 }}
+                  />
+                  <Line
+                    yAxisId="right"
+                    type="monotone"
+                    dataKey="invoices"
+                    stroke="#F59E0B"
+                    strokeWidth={2}
+                    name={t('dash_invoices', 'invoices')}
+                    dot={{ r: 3, fill: '#F59E0B' }}
+                    activeDot={{ r: 5 }}
+                  />
+                </ComposedChart>
+              </ResponsiveContainer>
+            ) : (
+              <div
+                style={{
+                  height: 300,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Text type="secondary">{t('noData')}</Text>
+              </div>
+            )}
+          </Card>
+        </Col>
+
+        {/* Expiry Calendar */}
+        <Col xs={24} lg={10}>
+          <Card
+            title={
+              <span style={{ fontSize: 15, fontWeight: 600 }}>
+                {t('dash_expiryCalendar', 'Expiry Calendar (Next 90 Days)')}
+              </span>
+            }
+            style={cardStyle}
+          >
+            {expiryCalendarData.length > 0 ? (
+              <Table
+                dataSource={expiryCalendarData}
+                columns={[
+                  {
+                    title: t('dash_week', 'Week'),
+                    dataIndex: 'week_label',
+                    key: 'week',
+                    ellipsis: true,
+                    render: (v: string, r: any) => (
+                      <Text strong>{v || dayjs(r.week_start).format('MMM DD')}</Text>
+                    ),
+                  },
+                  {
+                    title: t('dash_batchesExpiring', 'Batches'),
+                    dataIndex: 'batch_count',
+                    key: 'batches',
+                    width: 90,
+                    align: 'center' as const,
+                    render: (v: number) => (
+                      <Tag color="orange" style={{ fontWeight: 600 }}>
+                        {formatNumber(v)}
+                      </Tag>
+                    ),
+                  },
+                  {
+                    title: t('quantity'),
+                    dataIndex: 'total_qty',
+                    key: 'qty',
+                    width: 90,
+                    align: 'center' as const,
+                    render: (v: number) => formatNumber(v),
+                  },
+                ]}
+                rowKey="key"
+                size="small"
+                pagination={false}
+                style={{ marginTop: -4 }}
+                rowClassName={(record: any) => {
+                  if (record._weekIndex < 2) return 'expiry-row-red';
+                  if (record._weekIndex < 6) return 'expiry-row-orange';
+                  return '';
+                }}
+              />
+            ) : (
+              <div
+                style={{
+                  height: 200,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexDirection: 'column',
+                  gap: 8,
+                }}
+              >
+                <ClockCircleOutlined style={{ fontSize: 36, color: '#bfbfbf' }} />
+                <Text type="secondary">
+                  {t('dash_noExpiryCalendar', 'No items expiring in next 90 days')}
+                </Text>
+              </div>
+            )}
+          </Card>
+        </Col>
+      </Row>
 
       {/* ===== TOP PRODUCTS BAR + AR SUMMARY ===== */}
       <Row gutter={[14, 14]} style={{ marginBottom: 20 }}>

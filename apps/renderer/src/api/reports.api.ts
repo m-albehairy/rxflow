@@ -27,4 +27,19 @@ export const reportsApi = {
 
   ap: (params?: Record<string, unknown>) =>
     apiClient.get('/reports/ap', { params }),
+
+  dashboardWidgets: () =>
+    apiClient.get('/reports/dashboard-widgets'),
+
+  demandForecast: (params?: Record<string, unknown>) =>
+    apiClient.get('/reports/demand-forecast', { params }),
+
+  deadStock: (params?: Record<string, unknown>) =>
+    apiClient.get('/reports/dead-stock', { params }),
+
+  customerAnalytics: (params?: Record<string, unknown>) =>
+    apiClient.get('/reports/customer-analytics', { params }),
+
+  comparative: (params?: Record<string, unknown>) =>
+    apiClient.get('/reports/comparative', { params }),
 };
