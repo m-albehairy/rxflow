@@ -28,5 +28,19 @@
   "printPreview": "Print Preview",
   "noBarcode": "No barcode",
   "totalLabels": "Total Labels",
-  "selectedProducts": "Selected Products"
+  "selectedProducts": "Selected Products",
+  "productDetails": "Product Details",
+  "nameEnShort": "Name (EN)",
+  "nameArShort": "Name (AR)",
+  "genericEn": "Generic (EN)",
+  "perPack": "Per Pack",
+  "rxRequired": "Rx Required",
+  "stock": "Stock",
+  "avgCost": "Avg Cost",
+  "totalValue": "Total Value",
+  "reorderLevel": "Reorder Level",
+  "quickEdit": "Quick Edit",
+  "fullEdit": "Full Edit",
+  "quickEditTooltip": "Quick edit basic fields",
+  "fullEditTooltip": "Full form with all details"
 }

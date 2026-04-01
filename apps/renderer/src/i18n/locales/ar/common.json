@@ -115,5 +115,11 @@
   "dash_noCashierData": "لا توجد بيانات صرافين لليوم",
   "dash_noExpiryCalendar": "لا توجد أصناف تنتهي صلاحيتها خلال 90 يوم",
   "dash_week": "الأسبوع",
-  "dash_batchesExpiring": "الدفعات"
+  "dash_batchesExpiring": "الدفعات",
+  "lock_lockScreen": "قفل الشاشة",
+  "lock_enterPinToUnlock": "أدخل رمز PIN لفتح القفل",
+  "lock_incorrectPin": "رمز PIN غير صحيح. حاول مرة أخرى.",
+  "lock_switchAccount": "تبديل الحساب",
+  "lock_screenLocked": "الشاشة مقفلة",
+  "lock_noPinSet": "يرجى تعيين رمز PIN في ملفك الشخصي أولاً"
 }

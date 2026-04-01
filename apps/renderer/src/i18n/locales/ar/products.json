@@ -28,5 +28,19 @@
   "printPreview": "معاينة الطباعة",
   "noBarcode": "لا يوجد باركود",
   "totalLabels": "إجمالي الملصقات",
-  "selectedProducts": "المنتجات المحددة"
+  "selectedProducts": "المنتجات المحددة",
+  "productDetails": "تفاصيل المنتج",
+  "nameEnShort": "الاسم (EN)",
+  "nameArShort": "الاسم (AR)",
+  "genericEn": "الاسم العلمي (EN)",
+  "perPack": "لكل عبوة",
+  "rxRequired": "يتطلب وصفة",
+  "stock": "المخزون",
+  "avgCost": "متوسط التكلفة",
+  "totalValue": "القيمة الإجمالية",
+  "reorderLevel": "حد إعادة الطلب",
+  "quickEdit": "تعديل سريع",
+  "fullEdit": "تعديل كامل",
+  "quickEditTooltip": "تعديل سريع للحقول الأساسية",
+  "fullEditTooltip": "النموذج الكامل بجميع التفاصيل"
 }

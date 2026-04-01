@@ -115,5 +115,11 @@
   "dash_noCashierData": "No cashier data for today",
   "dash_noExpiryCalendar": "No items expiring in next 90 days",
   "dash_week": "Week",
-  "dash_batchesExpiring": "Batches"
+  "dash_batchesExpiring": "Batches",
+  "lock_lockScreen": "Lock Screen",
+  "lock_enterPinToUnlock": "Enter your PIN to unlock",
+  "lock_incorrectPin": "Incorrect PIN. Please try again.",
+  "lock_switchAccount": "Switch Account",
+  "lock_screenLocked": "Screen is locked",
+  "lock_noPinSet": "Please set a PIN code in your profile first"
 }

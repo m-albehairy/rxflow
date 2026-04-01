@@ -169,7 +169,7 @@ export function ProductsPage() {
     { title: t('sellingPrice'), dataIndex: 'defaultSellingPrice', render: (v: string) => parseFloat(v).toFixed(2) },
     { title: t('margin'), dataIndex: 'margin', render: (v: string) => `${parseFloat(v).toFixed(1)}%` },
     {
-      title: 'Stock',
+      title: t('stock'),
       dataIndex: ['inventory', 'quantity'],
       render: (v: string) => {
         const qty = parseFloat(v || '0');
@@ -180,7 +180,7 @@ export function ProductsPage() {
     {
       title: t('status'),
       dataIndex: 'isActive',
-      render: (v: boolean) => <Tag color={v ? 'green' : 'default'}>{v ? 'Active' : 'Inactive'}</Tag>,
+      render: (v: boolean) => <Tag color={v ? 'green' : 'default'}>{v ? t('common:active') : t('common:inactive')}</Tag>,
     },
   ];
 
@@ -300,8 +300,8 @@ export function ProductsPage() {
         extra={
           quickEditing ? (
             <Space>
-              <Button onClick={() => setQuickEditing(false)}>Cancel</Button>
-              <Button type="primary" onClick={() => editForm.submit()}>Save</Button>
+              <Button onClick={() => setQuickEditing(false)}>{t('common:cancel')}</Button>
+              <Button type="primary" onClick={() => editForm.submit()}>{t('common:save')}</Button>
             </Space>
           ) : (
             <Space>
@@ -314,11 +314,11 @@ export function ProductsPage() {
                   }}
                 />
               </Tooltip>
-              <Tooltip title="Quick edit basic fields">
-                <Button icon={<EditOutlined />} onClick={startQuickEdit}>Quick Edit</Button>
+              <Tooltip title={t('quickEditTooltip')}>
+                <Button icon={<EditOutlined />} onClick={startQuickEdit}>{t('quickEdit')}</Button>
               </Tooltip>
-              <Tooltip title="Full form with all details">
-                <Button icon={<ExpandOutlined />} onClick={openDetailedEdit}>Full Edit</Button>
+              <Tooltip title={t('fullEditTooltip')}>
+                <Button icon={<ExpandOutlined />} onClick={openDetailedEdit}>{t('fullEdit')}</Button>
               </Tooltip>
             </Space>
           )
@@ -327,37 +327,37 @@ export function ProductsPage() {
         {p && !quickEditing && (
           <div>
             <Descriptions column={2} size="small" bordered>
-              <Descriptions.Item label="Name (EN)" span={2}>{p.nameEn}</Descriptions.Item>
-              <Descriptions.Item label="Name (AR)" span={2}>{p.nameAr}</Descriptions.Item>
-              {p.genericNameEn && <Descriptions.Item label="Generic (EN)" span={2}>{p.genericNameEn}</Descriptions.Item>}
+              <Descriptions.Item label={t('nameEnShort')} span={2}>{p.nameEn}</Descriptions.Item>
+              <Descriptions.Item label={t('nameArShort')} span={2}>{p.nameAr}</Descriptions.Item>
+              {p.genericNameEn && <Descriptions.Item label={t('genericEn')} span={2}>{p.genericNameEn}</Descriptions.Item>}
               <Descriptions.Item label={t('barcode')}>{p.barcode || '—'}</Descriptions.Item>
               <Descriptions.Item label={t('category')}>{p.category?.nameEn || '—'}</Descriptions.Item>
               <Descriptions.Item label={t('sellingPrice')}>{parseFloat(p.defaultSellingPrice).toFixed(2)}</Descriptions.Item>
               <Descriptions.Item label={t('margin')}>{parseFloat(p.margin).toFixed(1)}%</Descriptions.Item>
-              <Descriptions.Item label="Unit">{p.unit}</Descriptions.Item>
-              <Descriptions.Item label="Per Pack">{p.unitsPerPack}</Descriptions.Item>
+              <Descriptions.Item label={t('unit')}>{p.unit}</Descriptions.Item>
+              <Descriptions.Item label={t('perPack')}>{p.unitsPerPack}</Descriptions.Item>
               <Descriptions.Item label={t('taxable')}>
-                <Tag color={p.taxable ? 'green' : 'default'}>{p.taxable ? 'Yes' : 'No'}</Tag>
+                <Tag color={p.taxable ? 'green' : 'default'}>{p.taxable ? t('common:yes') : t('common:no')}</Tag>
               </Descriptions.Item>
               <Descriptions.Item label={t('status')}>
-                <Tag color={p.isActive ? 'green' : 'default'}>{p.isActive ? 'Active' : 'Inactive'}</Tag>
+                <Tag color={p.isActive ? 'green' : 'default'}>{p.isActive ? t('common:active') : t('common:inactive')}</Tag>
               </Descriptions.Item>
-              <Descriptions.Item label="Track Expiry">
-                <Tag color={p.trackExpiry ? 'blue' : 'default'}>{p.trackExpiry ? 'Yes' : 'No'}</Tag>
+              <Descriptions.Item label={t('trackExpiry')}>
+                <Tag color={p.trackExpiry ? 'blue' : 'default'}>{p.trackExpiry ? t('common:yes') : t('common:no')}</Tag>
               </Descriptions.Item>
-              <Descriptions.Item label="Rx Required">
-                <Tag color={p.requirePrescription ? 'red' : 'default'}>{p.requirePrescription ? 'Yes' : 'No'}</Tag>
+              <Descriptions.Item label={t('rxRequired')}>
+                <Tag color={p.requirePrescription ? 'red' : 'default'}>{p.requirePrescription ? t('common:yes') : t('common:no')}</Tag>
               </Descriptions.Item>
             </Descriptions>
 
             {p.inventory && (
               <>
-                <Divider orientation="left" style={{ fontSize: 13 }}>Inventory</Divider>
+                <Divider orientation="left" style={{ fontSize: 13 }}>{t('common:inventory')}</Divider>
                 <Descriptions column={2} size="small" bordered>
-                  <Descriptions.Item label="Stock">{parseFloat(p.inventory.quantity || '0').toFixed(0)}</Descriptions.Item>
-                  <Descriptions.Item label="Avg Cost">{parseFloat(p.inventory.avgCost || '0').toFixed(4)}</Descriptions.Item>
-                  <Descriptions.Item label="Total Value">{parseFloat(p.inventory.totalValue || '0').toFixed(2)}</Descriptions.Item>
-                  <Descriptions.Item label="Reorder Level">{parseFloat(p.inventory.reorderLevel || '0').toFixed(0)}</Descriptions.Item>
+                  <Descriptions.Item label={t('stock')}>{parseFloat(p.inventory.quantity || '0').toFixed(0)}</Descriptions.Item>
+                  <Descriptions.Item label={t('avgCost')}>{parseFloat(p.inventory.avgCost || '0').toFixed(4)}</Descriptions.Item>
+                  <Descriptions.Item label={t('totalValue')}>{parseFloat(p.inventory.totalValue || '0').toFixed(2)}</Descriptions.Item>
+                  <Descriptions.Item label={t('reorderLevel')}>{parseFloat(p.inventory.reorderLevel || '0').toFixed(0)}</Descriptions.Item>
                 </Descriptions>
               </>
             )}

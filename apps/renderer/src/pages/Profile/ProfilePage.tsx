@@ -127,6 +127,7 @@ export function ProfilePage() {
       await usersApi.updatePin(user.id, values.pin);
       pinForm.resetFields();
       setProfile((prev) => prev ? { ...prev, hasPin: true } : prev);
+      window.dispatchEvent(new Event('pin-updated'));
       message.success(t('pinUpdated'));
     } catch (err: any) {
       if (err?.errorFields) return;

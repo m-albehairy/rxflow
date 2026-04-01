@@ -15,8 +15,11 @@ interface AuthState {
   refreshToken: string | null;
   user: UserInfo | null;
   isAuthenticated: boolean;
+  isLocked: boolean;
   setTokens: (accessToken: string, refreshToken: string) => void;
   setUser: (user: UserInfo) => void;
+  lock: () => void;
+  unlock: () => void;
   logout: () => void;
 }
 
@@ -27,11 +30,14 @@ export const useAuthStore = create<AuthState>()(
       refreshToken: null,
       user: null,
       isAuthenticated: false,
+      isLocked: false,
       setTokens: (accessToken, refreshToken) =>
         set({ accessToken, refreshToken, isAuthenticated: true }),
       setUser: (user) => set({ user }),
+      lock: () => set({ isLocked: true }),
+      unlock: () => set({ isLocked: false }),
       logout: () =>
-        set({ accessToken: null, refreshToken: null, user: null, isAuthenticated: false }),
+        set({ accessToken: null, refreshToken: null, user: null, isAuthenticated: false, isLocked: false }),
     }),
     { name: 'pharmapos-auth' },
   ),

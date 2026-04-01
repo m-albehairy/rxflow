@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import {
   Layout,
   Button,
@@ -11,6 +11,7 @@ import {
   Tooltip,
   Tag,
   Divider,
+  App,
 } from 'antd';
 import {
   MenuFoldOutlined,
@@ -34,6 +35,7 @@ import { useAuthStore } from '@/store/auth.store';
 import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
 import { NotificationPanel } from '@/components/common/NotificationPanel';
 import { BranchSelector } from '@/components/common/BranchSelector';
+import { authApi } from '@/api/auth.api';
 
 const { Header } = Layout;
 const { Text } = Typography;
@@ -71,8 +73,25 @@ export function Topbar() {
   const setTheme = useUIStore((s) => s.setTheme);
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
+  const lock = useAuthStore((s) => s.lock);
+  const { message } = App.useApp();
 
   const [isFullscreen, setIsFullscreen] = React.useState(false);
+  const [hasPin, setHasPin] = useState(false);
+
+  const fetchHasPin = useCallback(() => {
+    authApi.getProfile().then((res: any) => {
+      const data = res.data || res;
+      setHasPin(!!data.hasPin);
+    }).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    fetchHasPin();
+    const handler = () => setHasPin(true);
+    window.addEventListener('pin-updated', handler);
+    return () => window.removeEventListener('pin-updated', handler);
+  }, [fetchHasPin]);
 
   const handleLogout = () => {
     logout();
@@ -230,8 +249,21 @@ export function Topbar() {
             />
           </Tooltip>
 
-          <Tooltip title="Lock">
-            <Button type="text" size="small" icon={<LockOutlined />} style={iconBtnStyle} />
+          <Tooltip title={t('lock_lockScreen')}>
+            <Button
+              type="text"
+              size="small"
+              icon={<LockOutlined />}
+              style={iconBtnStyle}
+              onClick={() => {
+                if (hasPin) {
+                  lock();
+                } else {
+                  message.warning(t('lock_noPinSet'));
+                  navigate('/profile');
+                }
+              }}
+            />
           </Tooltip>
 
           <NotificationPanel />

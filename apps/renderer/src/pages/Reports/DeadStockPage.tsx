@@ -164,10 +164,10 @@ export function DeadStockPage() {
       >
         <span style={{ fontWeight: 500, marginInlineEnd: 8 }}>{t('deadStockDays', 'No sales in last')}:</span>
         <Radio.Group value={days} onChange={(e) => setDays(e.target.value)}>
-          <Radio.Button value={30}>30 {t('deadStockDaysLabel', 'Days')}</Radio.Button>
-          <Radio.Button value={60}>60 {t('deadStockDaysLabel', 'Days')}</Radio.Button>
-          <Radio.Button value={90}>90 {t('deadStockDaysLabel', 'Days')}</Radio.Button>
-          <Radio.Button value={180}>180 {t('deadStockDaysLabel', 'Days')}</Radio.Button>
+          <Radio.Button value={30}>{t('deadStockDaysLabel', { days: 30 })}</Radio.Button>
+          <Radio.Button value={60}>{t('deadStockDaysLabel', { days: 60 })}</Radio.Button>
+          <Radio.Button value={90}>{t('deadStockDaysLabel', { days: 90 })}</Radio.Button>
+          <Radio.Button value={180}>{t('deadStockDaysLabel', { days: 180 })}</Radio.Button>
         </Radio.Group>
       </Card>
 

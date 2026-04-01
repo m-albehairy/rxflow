@@ -52,7 +52,7 @@ export function SettingsPage() {
       const values = form.getFieldsValue();
       const entries = Object.entries(values).map(([key, value]) => ({ key, value }));
       await settingsApi.bulkUpdate(entries);
-      message.success('Settings saved');
+      message.success(t('settingsSaved'));
       await reload();
     } catch (err: any) {
       message.error(err?.error?.message || 'Failed');
@@ -77,7 +77,7 @@ export function SettingsPage() {
           <Row gutter={24}>
             <Col xs={24} md={12}>
               <Form.Item
-                label={<FieldLabel label={t('pharmacyName')} description="The display name shown on invoices and receipts" />}
+                label={<FieldLabel label={t('pharmacyName')} description={t('pharmacyNameDesc')} />}
                 name="PHARMACY_NAME"
                 style={{ marginBottom: 28 }}
               >
@@ -86,7 +86,7 @@ export function SettingsPage() {
             </Col>
             <Col xs={24} md={12}>
               <Form.Item
-                label={<FieldLabel label={t('pharmacyName') + ' (AR)'} description="Arabic version used for bilingual documents" />}
+                label={<FieldLabel label={t('pharmacyNameAr')} description={t('pharmacyNameArDesc')} />}
                 name="PHARMACY_NAME_AR"
                 style={{ marginBottom: 28 }}
               >
@@ -97,20 +97,20 @@ export function SettingsPage() {
           <Row gutter={24}>
             <Col xs={24} md={12}>
               <Form.Item
-                label={<FieldLabel label={t('currency')} description="ISO currency code (e.g. USD, EGP, SAR)" />}
+                label={<FieldLabel label={t('currency')} description={t('currencyDesc')} />}
                 name="CURRENCY"
                 style={{ marginBottom: 28 }}
               >
                 <Select
                   options={[
-                    { label: 'EGP - Egyptian Pound', value: 'EGP' },
+                    { label: t('currencyEGP'), value: 'EGP' },
                   ]}
                 />
               </Form.Item>
             </Col>
             <Col xs={24} md={12}>
               <Form.Item
-                label={<FieldLabel label={t('taxPercent')} description="Default tax rate applied to sales" />}
+                label={<FieldLabel label={t('taxPercent')} description={t('taxPercentDesc')} />}
                 name="TAX_PERCENT"
                 style={{ marginBottom: 28 }}
               >
@@ -131,20 +131,20 @@ export function SettingsPage() {
           <Row gutter={24}>
             <Col xs={24} md={12}>
               <Form.Item
-                label={<FieldLabel label={t('pricingMode')} description="How selling prices are determined across the system" />}
+                label={<FieldLabel label={t('pricingMode')} description={t('pricingModeDesc')} />}
                 name="PRICING_MODE"
                 style={{ marginBottom: 28 }}
               >
                 <Select options={[
-                  { label: 'Fixed', value: 'FIXED' },
-                  { label: 'Cost Plus', value: 'COST_PLUS' },
-                  { label: 'Hybrid', value: 'HYBRID' },
+                  { label: t('pricingFixed'), value: 'FIXED' },
+                  { label: t('pricingCostPlus'), value: 'COST_PLUS' },
+                  { label: t('pricingHybrid'), value: 'HYBRID' },
                 ]} />
               </Form.Item>
             </Col>
             <Col xs={24} md={12}>
               <Form.Item
-                label={<FieldLabel label={t('defaultMargin')} description="Percentage margin added on top of cost price" />}
+                label={<FieldLabel label={t('defaultMargin')} description={t('defaultMarginDesc')} />}
                 name="DEFAULT_MARGIN"
                 style={{ marginBottom: 28 }}
               >
@@ -155,14 +155,14 @@ export function SettingsPage() {
           <Row gutter={24}>
             <Col xs={24} md={12}>
               <Form.Item
-                label={<FieldLabel label={t('allowBelowCost')} description="What happens when a sale price is lower than cost" />}
+                label={<FieldLabel label={t('allowBelowCost')} description={t('allowBelowCostDesc')} />}
                 name="ALLOW_BELOW_COST"
                 style={{ marginBottom: 28 }}
               >
                 <Select options={[
-                  { label: 'Block', value: 'BLOCK' },
-                  { label: 'Require Approval', value: 'REQUIRE_APPROVAL' },
-                  { label: 'Allow', value: 'ALLOW' },
+                  { label: t('belowCostBlock'), value: 'BLOCK' },
+                  { label: t('belowCostRequireApproval'), value: 'REQUIRE_APPROVAL' },
+                  { label: t('belowCostAllow'), value: 'ALLOW' },
                 ]} />
               </Form.Item>
             </Col>
@@ -209,7 +209,7 @@ export function SettingsPage() {
             onClick={handleSave}
             size="middle"
           >
-            Save
+            {t('common:save')}
           </Button>
         </div>
       </Affix>

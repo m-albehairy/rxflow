@@ -13,5 +13,21 @@
   "newAvgCost": "New Avg Cost",
   "freeQty": "Free Qty",
   "unitCost": "Unit Cost",
-  "voidPurchase": "Void Purchase"
+  "voidPurchase": "Void Purchase",
+  "selectSupplier": "Select supplier",
+  "notes": "Notes",
+  "taxAmount": "Tax Amount",
+  "items": "Items",
+  "product": "Product",
+  "selectProduct": "Select product",
+  "quantity": "Quantity",
+  "batchNumber": "Batch Number",
+  "expiryDate": "Expiry Date",
+  "addItem": "Add Item",
+  "cancel": "Cancel",
+  "save": "Save",
+  "purchaseCreated": "Purchase created successfully",
+  "noItems": "Add at least one item",
+  "lineTotal": "Total",
+  "searchPlaceholder": "Search purchases..."
 }

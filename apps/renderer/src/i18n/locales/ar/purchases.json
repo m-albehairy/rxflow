@@ -13,5 +13,21 @@
   "newAvgCost": "التكلفة الجديدة",
   "freeQty": "كمية مجانية",
   "unitCost": "تكلفة الوحدة",
-  "voidPurchase": "إلغاء فاتورة الشراء"
+  "voidPurchase": "إلغاء فاتورة الشراء",
+  "selectSupplier": "اختر المورد",
+  "notes": "ملاحظات",
+  "taxAmount": "مبلغ الضريبة",
+  "items": "الأصناف",
+  "product": "المنتج",
+  "selectProduct": "اختر المنتج",
+  "quantity": "الكمية",
+  "batchNumber": "رقم التشغيلة",
+  "expiryDate": "تاريخ الانتهاء",
+  "addItem": "إضافة صنف",
+  "cancel": "إلغاء",
+  "save": "حفظ",
+  "purchaseCreated": "تم إنشاء فاتورة الشراء بنجاح",
+  "noItems": "أضف صنف واحد على الأقل",
+  "lineTotal": "الإجمالي",
+  "searchPlaceholder": "بحث في المشتريات..."
 }
