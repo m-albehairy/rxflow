@@ -16,6 +16,10 @@ const PERMISSION_MAP: Record<string, string> = {
   'invoices:void':     'canVoidInvoice',
   'invoices:refund':   'canRefundInvoice',
   'credit:manage':     'canApproveCreditSale',
+  'expenses:manage':   'canManageExpenses',
+  'suppliers:manage':  'canManageSuppliers',
+  'branches:manage':   'canManageBranches',
+  'stock:transfer':    'canTransferStock',
 };
 
 @Injectable()

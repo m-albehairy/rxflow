@@ -6,7 +6,8 @@ import { Repository, IsNull } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from '../../../database/entities/user.entity';
 import { ErrorMessages } from '../../../common/constants/error-messages';
-import { BCRYPT_COST_PASSWORD, BCRYPT_COST_PIN } from '@pharmapos/shared';
+import { AuditService } from '../../../shared/audit/audit.service';
+import { BCRYPT_COST_PASSWORD, BCRYPT_COST_PIN, AuditAction } from '@pharmapos/shared';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
 
 export interface TokenPair {
@@ -32,9 +33,10 @@ export class AuthService {
     @InjectRepository(User) private userRepo: Repository<User>,
     private jwtService: JwtService,
     private config: ConfigService,
+    private auditService: AuditService,
   ) {}
 
-  async login(username: string, password: string): Promise<LoginResult> {
+  async login(username: string, password: string, ipAddress?: string): Promise<LoginResult> {
     const user = await this.userRepo.findOne({
       where: { username, deletedAt: IsNull() },
       relations: ['role'],
@@ -55,6 +57,15 @@ export class AuthService {
 
     // Update last login
     await this.userRepo.update(user.id, { lastLoginAt: new Date() });
+
+    this.auditService.logSimple({
+      userId: user.id,
+      action: AuditAction.USER_LOGIN,
+      entityType: 'User',
+      entityId: user.id,
+      metadata: { username: user.username },
+      ipAddress,
+    });
 
     const tokens = await this.generateTokens(user.id, user.username);
 
@@ -168,6 +179,16 @@ export class AuthService {
     await this.userRepo.save(user);
 
     return this.getProfile(userId);
+  }
+
+  logLogout(userId: string, ipAddress?: string): void {
+    this.auditService.logSimple({
+      userId,
+      action: AuditAction.USER_LOGOUT,
+      entityType: 'User',
+      entityId: userId,
+      ipAddress,
+    });
   }
 
   private async generateTokens(userId: string, username: string): Promise<TokenPair> {

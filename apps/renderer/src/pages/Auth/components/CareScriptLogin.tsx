@@ -25,6 +25,7 @@ export function CareScriptLogin({ onFinish, loading }: Props) {
   const [charMsg, setCharMsg] = useState(t('loginCharIdle'));
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState<{ username?: string; password?: string }>({});
 
   // SVG element refs
   const charSvgRef = useRef<SVGSVGElement>(null);
@@ -113,7 +114,7 @@ export function CareScriptLogin({ onFinish, loading }: Props) {
     const svg = charSvgRef.current;
     if (!svg) return;
     svg.style.animation = 'none';
-    void svg.offsetWidth;
+    void (svg as unknown as HTMLElement).offsetWidth;
     svg.style.animation = 'csBounce 0.5s cubic-bezier(.34,1.56,.64,1)';
     setTimeout(() => { svg.style.animation = ''; }, 600);
   };
@@ -183,7 +184,16 @@ export function CareScriptLogin({ onFinish, loading }: Props) {
     }
   };
 
+  const validate = (): boolean => {
+    const newErrors: { username?: string; password?: string } = {};
+    if (!username.trim()) newErrors.username = t('usernameRequired', 'Username is required');
+    if (!password) newErrors.password = t('passwordRequired', 'Password is required');
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleLogin = () => {
+    if (!validate()) return;
     collarDown();
     resetPupils();
     addWave();
@@ -421,18 +431,20 @@ export function CareScriptLogin({ onFinish, loading }: Props) {
                 type="text"
                 value={username}
                 placeholder={t('username')}
-                onChange={handleUsernameChange}
+                onChange={(e) => { handleUsernameChange(e); if (errors.username) setErrors((prev) => ({ ...prev, username: undefined })); }}
                 onFocus={handleUsernameFocus}
                 onBlur={handleUsernameBlur}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleLogin(); }}
                 style={{
                   width: '100%', padding: '13px 18px',
-                  border: '1.5px solid #e2e8f0', borderRadius: '12px',
+                  border: `1.5px solid ${errors.username ? '#ef4444' : '#e2e8f0'}`, borderRadius: '12px',
                   fontSize: '14px', fontFamily: "'DM Sans',sans-serif",
                   color: '#0f1f4e', background: '#f8fafc',
                   transition: 'border-color .2s,box-shadow .2s,background .2s',
                   boxSizing: 'border-box',
                 }}
               />
+              {errors.username && <div style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px' }}>{errors.username}</div>}
             </div>
 
             {/* Password field */}
@@ -446,12 +458,13 @@ export function CareScriptLogin({ onFinish, loading }: Props) {
                   type={pwVisible ? 'text' : 'password'}
                   value={password}
                   placeholder="••••••••••"
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => { setPassword(e.target.value); if (errors.password) setErrors((prev) => ({ ...prev, password: undefined })); }}
                   onFocus={handlePwFocus}
                   onBlur={handlePwBlur}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleLogin(); }}
                   style={{
                     width: '100%', padding: isRTL ? '13px 18px 13px 44px' : '13px 44px 13px 18px',
-                    border: '1.5px solid #e2e8f0', borderRadius: '12px',
+                    border: `1.5px solid ${errors.password ? '#ef4444' : '#e2e8f0'}`, borderRadius: '12px',
                     fontSize: '14px', fontFamily: "'DM Sans',sans-serif",
                     color: '#0f1f4e', background: '#f8fafc',
                     transition: 'border-color .2s,box-shadow .2s,background .2s',
@@ -482,6 +495,7 @@ export function CareScriptLogin({ onFinish, loading }: Props) {
                   )}
                 </button>
               </div>
+              {errors.password && <div style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px' }}>{errors.password}</div>}
             </div>
 
             {/* Login button */}

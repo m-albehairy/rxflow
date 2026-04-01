@@ -130,21 +130,21 @@ export const PharmacistCharacter = memo(function PharmacistCharacter({
 
         {/* Eyebrows */}
         <motion.path
-          d="M-16,-42 Q-10,-45 -4,-42"
           fill="none"
           stroke="#3D2B1F"
           strokeWidth="1.5"
           strokeLinecap="round"
-          animate={isError ? { d: 'M-16,-40 Q-10,-45 -4,-42' } : { d: 'M-16,-42 Q-10,-45 -4,-42' }}
+          initial={{ d: 'M-16,-42 Q-10,-45 -4,-42' }}
+          animate={{ d: isError ? 'M-16,-40 Q-10,-45 -4,-42' : 'M-16,-42 Q-10,-45 -4,-42' }}
           transition={TRANSITION_FAST}
         />
         <motion.path
-          d="M4,-42 Q10,-45 16,-42"
           fill="none"
           stroke="#3D2B1F"
           strokeWidth="1.5"
           strokeLinecap="round"
-          animate={isError ? { d: 'M4,-42 Q10,-45 16,-40' } : { d: 'M4,-42 Q10,-45 16,-42' }}
+          initial={{ d: 'M4,-42 Q10,-45 16,-42' }}
+          animate={{ d: isError ? 'M4,-42 Q10,-45 16,-40' : 'M4,-42 Q10,-45 16,-42' }}
           transition={TRANSITION_FAST}
         />
 
@@ -158,10 +158,8 @@ export const PharmacistCharacter = memo(function PharmacistCharacter({
           >
             <ellipse cx="-10" cy="-33" rx="7" ry="7" fill="white" stroke="#E5E7EB" strokeWidth="0.5" />
             <motion.circle
-              cx={-10}
-              cy={-33}
-              r={3.5}
               fill="#3D2B1F"
+              initial={{ cx: -10, cy: -33, r: 3.5 }}
               animate={{
                 cx: -10 + pupilOffsetX,
                 cy: -33 + pupilOffsetY,
@@ -170,10 +168,8 @@ export const PharmacistCharacter = memo(function PharmacistCharacter({
               transition={TRANSITION_FAST}
             />
             <motion.circle
-              cx={-8.5}
-              cy={-34.5}
-              r={1.5}
               fill="white"
+              initial={{ cx: -8.5, cy: -34.5, r: 1.5 }}
               animate={{
                 cx: -8.5 + pupilOffsetX,
                 cy: -34.5 + pupilOffsetY,
@@ -190,10 +186,8 @@ export const PharmacistCharacter = memo(function PharmacistCharacter({
           >
             <ellipse cx="10" cy="-33" rx="7" ry="7" fill="white" stroke="#E5E7EB" strokeWidth="0.5" />
             <motion.circle
-              cx={10}
-              cy={-33}
-              r={3.5}
               fill="#3D2B1F"
+              initial={{ cx: 10, cy: -33, r: 3.5 }}
               animate={{
                 cx: 10 + pupilOffsetX,
                 cy: -33 + pupilOffsetY,
@@ -202,10 +196,8 @@ export const PharmacistCharacter = memo(function PharmacistCharacter({
               transition={TRANSITION_FAST}
             />
             <motion.circle
-              cx={11.5}
-              cy={-34.5}
-              r={1.5}
               fill="white"
+              initial={{ cx: 11.5, cy: -34.5, r: 1.5 }}
               animate={{
                 cx: 11.5 + pupilOffsetX,
                 cy: -34.5 + pupilOffsetY,
@@ -228,18 +220,18 @@ export const PharmacistCharacter = memo(function PharmacistCharacter({
 
         {/* Mouth */}
         <motion.path
-          d="M-6,-16 Q0,-12 6,-16"
           fill="none"
           stroke="#B07C62"
           strokeWidth="1.5"
           strokeLinecap="round"
-          animate={
-            isLoading || isSuccess
-              ? { d: 'M-8,-16 Q0,-10 8,-16' }  // big smile
+          initial={{ d: 'M-6,-16 Q0,-12 6,-16' }}
+          animate={{
+            d: isLoading || isSuccess
+              ? 'M-8,-16 Q0,-10 8,-16'   // big smile
               : isError
-              ? { d: 'M-6,-14 Q0,-18 6,-14' }  // frown
-              : { d: 'M-6,-16 Q0,-12 6,-16' }  // small smile
-          }
+              ? 'M-6,-14 Q0,-18 6,-14'   // frown
+              : 'M-6,-16 Q0,-12 6,-16',  // small smile
+          }}
           transition={TRANSITION}
         />
       </motion.g>
@@ -311,6 +303,7 @@ export const PharmacistCharacter = memo(function PharmacistCharacter({
               cx="-10" cy="-10"
               r="1"
               fill={colors.gold}
+              initial={{ opacity: 0, scale: 0.5 }}
               animate={{ opacity: [0, 1, 0], scale: [0.5, 1, 0.5] }}
               transition={{ duration: 1.5, repeat: Infinity, delay: 0 }}
             />
@@ -318,6 +311,7 @@ export const PharmacistCharacter = memo(function PharmacistCharacter({
               cx="10" cy="-15"
               r="1.2"
               fill={colors.gold}
+              initial={{ opacity: 0, scale: 0.5 }}
               animate={{ opacity: [0, 1, 0], scale: [0.5, 1, 0.5] }}
               transition={{ duration: 1.5, repeat: Infinity, delay: 0.5 }}
             />
@@ -325,6 +319,7 @@ export const PharmacistCharacter = memo(function PharmacistCharacter({
               cx="12" cy="5"
               r="0.8"
               fill={colors.gold}
+              initial={{ opacity: 0, scale: 0.5 }}
               animate={{ opacity: [0, 1, 0], scale: [0.5, 1, 0.5] }}
               transition={{ duration: 1.5, repeat: Infinity, delay: 1 }}
             />
@@ -348,7 +343,7 @@ export const PharmacistCharacter = memo(function PharmacistCharacter({
                 key={i}
                 cx={spark.x}
                 cy={spark.y}
-                r="2"
+                r={2}
                 fill={colors.gold}
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{ opacity: [0, 1, 0], scale: [0, 1.5, 0], y: spark.y - 15 }}

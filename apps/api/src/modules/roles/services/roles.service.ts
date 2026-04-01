@@ -3,7 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, IsNull } from 'typeorm';
 import { Role } from '../../../database/entities/role.entity';
 import { User } from '../../../database/entities/user.entity';
+import { AuditService } from '../../../shared/audit/audit.service';
 import { ErrorMessages } from '../../../common/constants/error-messages';
+import { AuditAction } from '@pharmapos/shared';
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { UpdateRoleDto } from '../dto/update-role.dto';
 
@@ -12,6 +14,7 @@ export class RolesService {
   constructor(
     @InjectRepository(Role) private roleRepo: Repository<Role>,
     @InjectRepository(User) private userRepo: Repository<User>,
+    private auditService: AuditService,
   ) {}
 
   async findAll() {
@@ -39,25 +42,53 @@ export class RolesService {
     return role;
   }
 
-  async create(dto: CreateRoleDto): Promise<Role> {
+  async create(dto: CreateRoleDto, actorId: string): Promise<Role> {
     const role = this.roleRepo.create(dto);
-    return this.roleRepo.save(role);
+    const saved = await this.roleRepo.save(role);
+
+    this.auditService.logSimple({
+      userId: actorId,
+      action: AuditAction.ROLE_CREATED,
+      entityType: 'Role',
+      entityId: saved.id,
+      after: { name: dto.name, permissions: dto.permissions },
+    });
+
+    return saved;
   }
 
-  async update(id: string, dto: UpdateRoleDto): Promise<Role> {
+  async update(id: string, dto: UpdateRoleDto, actorId: string): Promise<Role> {
     const role = await this.findById(id);
     if (dto.name) role.name = dto.name;
     if (dto.nameAr) role.nameAr = dto.nameAr;
     if (dto.description !== undefined) role.description = dto.description;
     if (dto.permissions) role.permissions = dto.permissions;
-    return this.roleRepo.save(role);
+    const saved = await this.roleRepo.save(role);
+
+    this.auditService.logSimple({
+      userId: actorId,
+      action: AuditAction.ROLE_UPDATED,
+      entityType: 'Role',
+      entityId: id,
+      after: { name: dto.name, permissions: dto.permissions },
+    });
+
+    return saved;
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: string, actorId: string): Promise<void> {
     const role = await this.findById(id);
     if (role.isSystem) throw new BadRequestException(ErrorMessages.ROLE_IS_SYSTEM);
     const userCount = await this.userRepo.count({ where: { roleId: id, deletedAt: IsNull() } });
     if (userCount > 0) throw new ConflictException(ErrorMessages.ROLE_HAS_USERS);
     await this.roleRepo.softDelete(id);
+
+    this.auditService.logSimple({
+      userId: actorId,
+      action: AuditAction.ROLE_DELETED,
+      entityType: 'Role',
+      entityId: id,
+      metadata: { roleName: role.name },
+    });
   }
 }

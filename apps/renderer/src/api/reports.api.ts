@@ -18,4 +18,13 @@ export const reportsApi = {
 
   audit: (params?: Record<string, unknown>) =>
     apiClient.get('/audit', { params }),
+
+  pnl: (params?: Record<string, unknown>) =>
+    apiClient.get('/reports/pnl', { params }),
+
+  cashflow: (params?: Record<string, unknown>) =>
+    apiClient.get('/reports/cashflow', { params }),
+
+  ap: (params?: Record<string, unknown>) =>
+    apiClient.get('/reports/ap', { params }),
 };

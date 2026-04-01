@@ -1,5 +1,6 @@
-import { Entity, Column } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from '../base.entity';
+import { Branch } from './branch.entity';
 
 @Entity('shifts')
 export class Shift extends BaseEntity {
@@ -41,4 +42,11 @@ export class Shift extends BaseEntity {
 
   @Column({ type: 'varchar', nullable: true })
   shiftNumber: string | null;
+
+  @Column({ type: 'uuid', nullable: true })
+  branchId: string | null;
+
+  @ManyToOne(() => Branch)
+  @JoinColumn({ name: 'branch_id' })
+  branch: Branch;
 }

@@ -22,6 +22,10 @@ import { ShiftsModule } from './modules/shifts/shifts.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { SharedModule } from './shared/shared.module';
 import { HealthModule } from './modules/health/health.module';
+import { ExpensesModule } from './modules/expenses/expenses.module';
+import { BranchesModule } from './modules/branches/branches.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
+import { ScheduleModule } from '@nestjs/schedule';
 import { JwtAuthGuard } from './common/guards/jwt.guard';
 import { PermissionsGuard } from './common/guards/permissions.guard';
 
@@ -48,6 +52,10 @@ import { PermissionsGuard } from './common/guards/permissions.guard';
     AuditModule,
     ShiftsModule,
     ReportsModule,
+    ExpensesModule,
+    BranchesModule,
+    NotificationsModule,
+    ScheduleModule.forRoot(),
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },

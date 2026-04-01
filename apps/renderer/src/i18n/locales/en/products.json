@@ -16,5 +16,17 @@
   "genericName": "Generic Name",
   "bulkImport": "Bulk Import",
   "bulkPriceUpdate": "Bulk Price Update",
-  "productHistory": "Product History"
+  "productHistory": "Product History",
+  "printLabels": "Print Labels",
+  "printLabel": "Print Label",
+  "labelSize": "Label Size",
+  "labelSmall": "Small (30x20mm)",
+  "labelMedium": "Medium (50x30mm)",
+  "labelLarge": "Large (70x40mm)",
+  "barcodeFormat": "Barcode Format",
+  "labelQuantity": "Quantity",
+  "printPreview": "Print Preview",
+  "noBarcode": "No barcode",
+  "totalLabels": "Total Labels",
+  "selectedProducts": "Selected Products"
 }

@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Patch, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, Get, Patch, UseGuards, HttpCode, HttpStatus, Ip } from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
 import { Public } from '../../../common/decorators/public.decorator';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
@@ -15,14 +15,14 @@ export class AuthController {
   @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Body() dto: LoginDto) {
-    return this.authService.login(dto.username, dto.password);
+  async login(@Body() dto: LoginDto, @Ip() ip: string) {
+    return this.authService.login(dto.username, dto.password, ip);
   }
 
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  async logout() {
-    // Client-side token removal; server-side blacklist can be added later
+  async logout(@CurrentUser() user: AuthenticatedUser, @Ip() ip: string) {
+    this.authService.logLogout(user.id, ip);
     return { message: 'Logged out successfully' };
   }
 

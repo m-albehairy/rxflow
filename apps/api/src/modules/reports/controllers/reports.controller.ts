@@ -6,6 +6,18 @@ import { RequirePermission } from '../../../common/decorators/permission.decorat
 export class ReportsController {
   constructor(private reportsService: ReportsService) {}
 
+  @Get('pnl')
+  @RequirePermission('reports:view')
+  async pnlReport(@Query('from') from?: string, @Query('to') to?: string, @Query('groupBy') groupBy?: string) {
+    return this.reportsService.profitAndLoss({ from, to, groupBy: groupBy || 'month' });
+  }
+
+  @Get('cashflow')
+  @RequirePermission('reports:view')
+  async cashFlowReport(@Query('from') from?: string, @Query('to') to?: string, @Query('groupBy') groupBy?: string) {
+    return this.reportsService.cashFlowReport({ from, to, groupBy: groupBy || 'month' });
+  }
+
   @Get('sales')
   @RequirePermission('reports:view')
   async salesReport(@Query('from') from?: string, @Query('to') to?: string, @Query('cashierId') cashierId?: string, @Query('groupBy') groupBy?: string) {
@@ -34,5 +46,11 @@ export class ReportsController {
   @RequirePermission('reports:view')
   async shiftReport(@Query('cashierId') cashierId?: string, @Query('from') from?: string, @Query('to') to?: string) {
     return this.reportsService.shiftReport({ cashierId, from, to });
+  }
+
+  @Get('ap')
+  @RequirePermission('reports:view')
+  async apReport(@Query('supplierId') supplierId?: string) {
+    return this.reportsService.apReport(supplierId);
   }
 }

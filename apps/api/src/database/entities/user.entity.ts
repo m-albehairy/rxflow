@@ -1,6 +1,7 @@
 import { Entity, Column, ManyToOne, OneToOne, OneToMany, JoinColumn } from 'typeorm';
 import { BaseEntity } from '../base.entity';
 import { Role } from './role.entity';
+import { Branch } from './branch.entity';
 import { UserPreference } from './user-preference.entity';
 import { Invoice } from './invoice.entity';
 import { AuditLog } from './audit-log.entity';
@@ -47,4 +48,11 @@ export class User extends BaseEntity {
 
   @Column({ type: 'timestamptz', nullable: true })
   lastLoginAt: Date | null;
+
+  @Column({ type: 'uuid', nullable: true })
+  branchId: string | null;
+
+  @ManyToOne(() => Branch)
+  @JoinColumn({ name: 'branch_id' })
+  branch: Branch;
 }

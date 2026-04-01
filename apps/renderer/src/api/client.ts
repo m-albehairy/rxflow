@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useAuthStore } from '@/store/auth.store';
+import { useBranchStore } from '@/store/branch.store';
 
 const apiClient = axios.create({
   baseURL: '/api/v1',
@@ -12,6 +13,11 @@ apiClient.interceptors.request.use((config) => {
   const { accessToken } = useAuthStore.getState();
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`;
+  }
+
+  const { currentBranchId } = useBranchStore.getState();
+  if (currentBranchId) {
+    config.headers['x-branch-id'] = currentBranchId;
   }
 
   const lang = localStorage.getItem('pharmapos-ui');

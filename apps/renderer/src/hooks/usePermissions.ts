@@ -44,5 +44,9 @@ export function usePermissions() {
     canViewCost: can('canViewCost'),
     canAdjustInventory: can('canAdjustInventory'),
     canCreatePurchase: can('canCreatePurchase'),
+    canManageExpenses: can('canManageExpenses'),
+    canManageSuppliers: can('canManageSuppliers'),
+    canManageBranches: can('canManageBranches'),
+    canTransferStock: can('canTransferStock'),
   };
 }

@@ -20,10 +20,18 @@ import { ProfitReportPage } from '@/pages/Reports/ProfitReportPage';
 import { InventoryReportPage } from '@/pages/Reports/InventoryReportPage';
 import { ARReportPage } from '@/pages/Reports/ARReportPage';
 import { ShiftReportPage } from '@/pages/Reports/ShiftReportPage';
+import { AuditLogPage } from '@/pages/Reports/AuditLogPage';
 import { SettingsPage } from '@/pages/Settings/SettingsPage';
 import { ProfilePage } from '@/pages/Profile/ProfilePage';
 import { LoginPage } from '@/pages/Auth/LoginPage';
 import { UserManagementPage } from '@/pages/Users/UserManagementPage';
+import { ExpensesPage } from '@/pages/Expenses/ExpensesPage';
+import { SuppliersPage } from '@/pages/Suppliers/SuppliersPage';
+import { PnLReportPage } from '@/pages/Reports/PnLReportPage';
+import { CashFlowReportPage } from '@/pages/Reports/CashFlowReportPage';
+import { APReportPage } from '@/pages/Reports/APReportPage';
+import { BranchesPage } from '@/pages/Branches/BranchesPage';
+import { StockTransfersPage } from '@/pages/Branches/StockTransfersPage';
 
 function App() {
   const language = useUIStore((s) => s.language);
@@ -53,6 +61,14 @@ function App() {
               <Route path="reports/inventory" element={<InventoryReportPage />} />
               <Route path="reports/ar" element={<ARReportPage />} />
               <Route path="reports/shifts" element={<ShiftReportPage />} />
+              <Route path="reports/audit" element={<AuditLogPage />} />
+              <Route path="reports/pnl" element={<PnLReportPage />} />
+              <Route path="reports/cashflow" element={<CashFlowReportPage />} />
+              <Route path="reports/ap" element={<APReportPage />} />
+              <Route path="expenses" element={<ExpensesPage />} />
+              <Route path="suppliers" element={<SuppliersPage />} />
+              <Route path="branches" element={<BranchesPage />} />
+              <Route path="stock-transfers" element={<StockTransfersPage />} />
               <Route path="settings" element={<SettingsPage />} />
               <Route path="users" element={<UserManagementPage />} />
               <Route path="profile" element={<ProfilePage />} />

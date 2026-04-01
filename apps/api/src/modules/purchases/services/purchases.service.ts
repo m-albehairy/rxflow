@@ -188,7 +188,7 @@ export class PurchasesService {
 
       await this.auditService.log(queryRunner, {
         userId,
-        action: AuditAction.PURCHASE_CREATED,
+        action: AuditAction.PURCHASE_VOIDED,
         entityType: 'Purchase',
         entityId: id,
         purchaseId: id,

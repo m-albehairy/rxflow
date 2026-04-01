@@ -5,7 +5,9 @@ import Decimal from 'decimal.js';
 import { Shift } from '../../../database/entities/shift.entity';
 import { Invoice } from '../../../database/entities/invoice.entity';
 import { Payment } from '../../../database/entities/payment.entity';
+import { AuditService } from '../../../shared/audit/audit.service';
 import { ErrorMessages } from '../../../common/constants/error-messages';
+import { AuditAction } from '@pharmapos/shared';
 import { OpenShiftDto } from '../dto/open-shift.dto';
 import { CloseShiftDto } from '../dto/close-shift.dto';
 
@@ -14,6 +16,7 @@ export class ShiftsService {
   constructor(
     @InjectRepository(Shift) private shiftRepo: Repository<Shift>,
     @InjectRepository(Invoice) private invoiceRepo: Repository<Invoice>,
+    private auditService: AuditService,
   ) {}
 
   async getCurrent(cashierId: string): Promise<Shift | null> {
@@ -38,7 +41,17 @@ export class ShiftsService {
         status: 'OPEN',
         shiftNumber,
       });
-      return await this.shiftRepo.save(shift);
+      const saved = await this.shiftRepo.save(shift);
+
+      this.auditService.logSimple({
+        userId: cashierId,
+        action: AuditAction.SHIFT_OPENED,
+        entityType: 'Shift',
+        entityId: saved.id,
+        metadata: { shiftNumber: saved.shiftNumber, openingCash: saved.openingCash },
+      });
+
+      return saved;
     } catch (error) {
       console.error('openShift error:', error);
       throw error;
@@ -61,7 +74,17 @@ export class ShiftsService {
     shift.notes = dto.notes || null;
     shift.status = 'CLOSED';
 
-    return this.shiftRepo.save(shift);
+    const saved = await this.shiftRepo.save(shift);
+
+    this.auditService.logSimple({
+      userId: cashierId,
+      action: AuditAction.SHIFT_CLOSED,
+      entityType: 'Shift',
+      entityId: saved.id,
+      metadata: { shiftNumber: saved.shiftNumber, closingCash: saved.closingCash, variance: saved.variance },
+    });
+
+    return saved;
   }
 
   async getShiftSummary(id: string) {

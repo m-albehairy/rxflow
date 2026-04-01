@@ -13,6 +13,10 @@ import profileEn from './locales/en/profile.json';
 import wizardEn from './locales/en/wizard.json';
 import errorsEn from './locales/en/errors.json';
 import usersEn from './locales/en/users.json';
+import expensesEn from './locales/en/expenses.json';
+import suppliersEn from './locales/en/suppliers.json';
+import branchesEn from './locales/en/branches.json';
+import notificationsEn from './locales/en/notifications.json';
 
 import commonAr from './locales/ar/common.json';
 import posAr from './locales/ar/pos.json';
@@ -26,6 +30,10 @@ import profileAr from './locales/ar/profile.json';
 import wizardAr from './locales/ar/wizard.json';
 import errorsAr from './locales/ar/errors.json';
 import usersAr from './locales/ar/users.json';
+import expensesAr from './locales/ar/expenses.json';
+import suppliersAr from './locales/ar/suppliers.json';
+import branchesAr from './locales/ar/branches.json';
+import notificationsAr from './locales/ar/notifications.json';
 
 i18n.use(initReactI18next).init({
   resources: {
@@ -42,6 +50,10 @@ i18n.use(initReactI18next).init({
       wizard: wizardEn,
       errors: errorsEn,
       users: usersEn,
+      expenses: expensesEn,
+      suppliers: suppliersEn,
+      branches: branchesEn,
+      notifications: notificationsEn,
     },
     ar: {
       common: commonAr,
@@ -56,6 +68,10 @@ i18n.use(initReactI18next).init({
       wizard: wizardAr,
       errors: errorsAr,
       users: usersAr,
+      expenses: expensesAr,
+      suppliers: suppliersAr,
+      branches: branchesAr,
+      notifications: notificationsAr,
     },
   },
   lng: 'ar',

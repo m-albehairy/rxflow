@@ -27,20 +27,20 @@ export class UsersController {
 
   @Post()
   @RequirePermission('users:manage')
-  async create(@Body() dto: CreateUserDto) {
-    return this.usersService.create(dto);
+  async create(@Body() dto: CreateUserDto, @CurrentUser() user: AuthenticatedUser) {
+    return this.usersService.create(dto, user.id);
   }
 
   @Patch(':id')
   @RequirePermission('users:manage')
-  async update(@Param('id') id: string, @Body() dto: UpdateUserDto) {
-    return this.usersService.update(id, dto);
+  async update(@Param('id') id: string, @Body() dto: UpdateUserDto, @CurrentUser() user: AuthenticatedUser) {
+    return this.usersService.update(id, dto, user.id);
   }
 
   @Post(':id/reset-password')
   @RequirePermission('users:manage')
-  async resetPassword(@Param('id') id: string, @Body() dto: ResetPasswordDto) {
-    return this.usersService.resetPassword(id, dto.newPassword);
+  async resetPassword(@Param('id') id: string, @Body() dto: ResetPasswordDto, @CurrentUser() user: AuthenticatedUser) {
+    return this.usersService.resetPassword(id, dto.newPassword, user.id);
   }
 
   @Delete(':id')

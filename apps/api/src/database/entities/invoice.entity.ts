@@ -3,6 +3,7 @@ import { BaseEntity } from '../base.entity';
 import { InvoiceStatus, OrderType } from '@pharmapos/shared';
 import { User } from './user.entity';
 import { Customer } from './customer.entity';
+import { Branch } from './branch.entity';
 import { InvoiceItem } from './invoice-item.entity';
 import { Payment } from './payment.entity';
 import { AuditLog } from './audit-log.entity';
@@ -82,4 +83,11 @@ export class Invoice extends BaseEntity {
 
   @OneToMany(() => AuditLog, (log) => log.invoice)
   auditLogs: AuditLog[];
+
+  @Column({ type: 'uuid', nullable: true })
+  branchId: string | null;
+
+  @ManyToOne(() => Branch)
+  @JoinColumn({ name: 'branch_id' })
+  branch: Branch;
 }

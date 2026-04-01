@@ -16,5 +16,17 @@
   "genericName": "الاسم العلمي",
   "bulkImport": "استيراد جماعي",
   "bulkPriceUpdate": "تحديث أسعار جماعي",
-  "productHistory": "تاريخ المنتج"
+  "productHistory": "تاريخ المنتج",
+  "printLabels": "طباعة الباركود",
+  "printLabel": "طباعة باركود",
+  "labelSize": "حجم الملصق",
+  "labelSmall": "صغير (30×20مم)",
+  "labelMedium": "متوسط (50×30مم)",
+  "labelLarge": "كبير (70×40مم)",
+  "barcodeFormat": "نوع الباركود",
+  "labelQuantity": "الكمية",
+  "printPreview": "معاينة الطباعة",
+  "noBarcode": "لا يوجد باركود",
+  "totalLabels": "إجمالي الملصقات",
+  "selectedProducts": "المنتجات المحددة"
 }

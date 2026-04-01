@@ -88,6 +88,7 @@
   "inventoryReport": "Inventory",
   "arReport": "Receivables",
   "shiftReport": "Shifts",
+  "auditReport": "Audit Log",
   "dash_invoices": "invoices",
   "dash_profitMargin": "Profit Margin",
   "dash_receivables": "Receivables",

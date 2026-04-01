@@ -4,8 +4,9 @@ import { Repository, IsNull } from 'typeorm';
 import { User } from '../../../database/entities/user.entity';
 import { UserPreference } from '../../../database/entities/user-preference.entity';
 import { AuthService } from '../../auth/services/auth.service';
+import { AuditService } from '../../../shared/audit/audit.service';
 import { ErrorMessages } from '../../../common/constants/error-messages';
-import { DEFAULT_PAGE, DEFAULT_LIMIT, MAX_LIMIT } from '@pharmapos/shared';
+import { DEFAULT_PAGE, DEFAULT_LIMIT, MAX_LIMIT, AuditAction } from '@pharmapos/shared';
 import { FilterUsersDto } from '../dto/filter-users.dto';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
@@ -18,6 +19,7 @@ export class UsersService {
     @InjectRepository(User) private userRepo: Repository<User>,
     @InjectRepository(UserPreference) private prefRepo: Repository<UserPreference>,
     private authService: AuthService,
+    private auditService: AuditService,
   ) {}
 
   async findAll(filter: FilterUsersDto) {
@@ -66,7 +68,7 @@ export class UsersService {
     return user;
   }
 
-  async create(dto: CreateUserDto): Promise<User> {
+  async create(dto: CreateUserDto, actorId: string): Promise<User> {
     const existing = await this.userRepo.findOne({ where: { username: dto.username, deletedAt: IsNull() } });
     if (existing) throw new ConflictException(ErrorMessages.USER_ALREADY_EXISTS);
 
@@ -89,10 +91,18 @@ export class UsersService {
     const prefs = this.prefRepo.create({ userId: saved.id });
     await this.prefRepo.save(prefs);
 
+    this.auditService.logSimple({
+      userId: actorId,
+      action: AuditAction.USER_CREATED,
+      entityType: 'User',
+      entityId: saved.id,
+      after: { username: dto.username, fullName: dto.fullName, roleId: dto.roleId },
+    });
+
     return this.findById(saved.id);
   }
 
-  async update(id: string, dto: UpdateUserDto): Promise<User> {
+  async update(id: string, dto: UpdateUserDto, actorId: string): Promise<User> {
     const user = await this.findById(id);
 
     if (dto.fullName !== undefined) user.fullName = dto.fullName;
@@ -101,18 +111,42 @@ export class UsersService {
     if (dto.isActive !== undefined) user.isActive = dto.isActive;
     if (dto.password) user.passwordHash = await this.authService.hashPassword(dto.password);
 
-    return this.userRepo.save(user);
+    const saved = await this.userRepo.save(user);
+
+    this.auditService.logSimple({
+      userId: actorId,
+      action: AuditAction.USER_UPDATED,
+      entityType: 'User',
+      entityId: id,
+      after: { fullName: dto.fullName, roleId: dto.roleId, isActive: dto.isActive },
+    });
+
+    return saved;
   }
 
-  async resetPassword(id: string, newPassword: string): Promise<void> {
+  async resetPassword(id: string, newPassword: string, actorId: string): Promise<void> {
     const user = await this.findById(id);
     user.passwordHash = await this.authService.hashPassword(newPassword);
     await this.userRepo.save(user);
+
+    this.auditService.logSimple({
+      userId: actorId,
+      action: AuditAction.PASSWORD_RESET,
+      entityType: 'User',
+      entityId: id,
+    });
   }
 
   async softDelete(id: string, currentUserId: string): Promise<void> {
     if (id === currentUserId) throw new BadRequestException(ErrorMessages.CANNOT_DELETE_SELF);
     await this.userRepo.softDelete(id);
+
+    this.auditService.logSimple({
+      userId: currentUserId,
+      action: AuditAction.USER_DELETED,
+      entityType: 'User',
+      entityId: id,
+    });
   }
 
   async updatePin(id: string, pin: string, currentUser: AuthenticatedUser): Promise<void> {

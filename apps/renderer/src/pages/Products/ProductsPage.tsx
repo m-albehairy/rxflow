@@ -6,7 +6,9 @@ import {
 import {
   PlusOutlined, SearchOutlined, EditOutlined, ExpandOutlined,
   InfoCircleOutlined, DollarOutlined, MedicineBoxOutlined, SettingOutlined,
+  BarcodeOutlined, PrinterOutlined,
 } from '@ant-design/icons';
+import { BarcodeLabelModal } from '@/components/products/BarcodeLabelModal';
 import { useTranslation } from 'react-i18next';
 import { productsApi } from '@/api/products.api';
 import { useUIStore } from '@/store/ui.store';
@@ -42,6 +44,10 @@ export function ProductsPage() {
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [quickEditing, setQuickEditing] = useState(false);
   const [editForm] = Form.useForm();
+
+  // Barcode label printing
+  const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
+  const [barcodeLabelOpen, setBarcodeLabelOpen] = useState(false);
 
   // Detailed form drawer (full create / full edit)
   const [detailedOpen, setDetailedOpen] = useState(false);
@@ -222,6 +228,13 @@ export function ProductsPage() {
           <Tooltip title="Full form with all product details">
             <Button icon={<ExpandOutlined />} onClick={openDetailedCreate}>Detailed</Button>
           </Tooltip>
+          <Button
+            icon={<BarcodeOutlined />}
+            disabled={selectedRowKeys.length === 0}
+            onClick={() => setBarcodeLabelOpen(true)}
+          >
+            {t('printLabels', 'Print Labels')} ({selectedRowKeys.length})
+          </Button>
           <Title level={3} style={{ margin: 0 }}>{t('title')}</Title>
         </Space>
         <Input
@@ -243,6 +256,10 @@ export function ProductsPage() {
           loading={loading}
           size="middle"
           scroll={{ x: 800 }}
+          rowSelection={{
+            selectedRowKeys,
+            onChange: (keys) => setSelectedRowKeys(keys as string[]),
+          }}
           pagination={{ ...pagination, onChange: (page) => setPagination((p) => ({ ...p, current: page })) }}
           onRow={(record) => ({ style: { cursor: 'pointer' }, onClick: () => openDetail(record) })}
         />
@@ -288,6 +305,15 @@ export function ProductsPage() {
             </Space>
           ) : (
             <Space>
+              <Tooltip title={t('printLabel', 'Print Label')}>
+                <Button
+                  icon={<PrinterOutlined />}
+                  onClick={() => {
+                    setSelectedRowKeys([selectedProduct.id]);
+                    setBarcodeLabelOpen(true);
+                  }}
+                />
+              </Tooltip>
               <Tooltip title="Quick edit basic fields">
                 <Button icon={<EditOutlined />} onClick={startQuickEdit}>Quick Edit</Button>
               </Tooltip>
@@ -344,6 +370,13 @@ export function ProductsPage() {
           </Form>
         )}
       </Drawer>
+
+      {/* ── Barcode Label Modal ── */}
+      <BarcodeLabelModal
+        open={barcodeLabelOpen}
+        onClose={() => setBarcodeLabelOpen(false)}
+        selectedProducts={products.filter((p: any) => selectedRowKeys.includes(p.id))}
+      />
 
       {/* ── Detailed Create/Edit Drawer (Full Form) ── */}
       <Drawer

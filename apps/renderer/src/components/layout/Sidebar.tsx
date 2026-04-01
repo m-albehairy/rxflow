@@ -15,11 +15,21 @@ import {
   InboxOutlined,
   CreditCardOutlined,
   ClockCircleOutlined,
+  AuditOutlined,
   UserOutlined,
+  TruckOutlined,
+  WalletOutlined,
+  AccountBookOutlined,
+  FundOutlined,
+  BankOutlined,
+  SwapOutlined,
+  BranchesOutlined,
+  LogoutOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useUIStore } from '@/store/ui.store';
+import { useAuthStore } from '@/store/auth.store';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useSettings } from '@/hooks/useSettings';
 import type { ItemType } from 'antd/es/menu/interface';
@@ -75,8 +85,14 @@ export function Sidebar() {
   const { t } = useTranslation('common');
   const collapsed = useUIStore((s) => s.sidebarCollapsed);
   const language = useUIStore((s) => s.language);
+  const logout = useAuthStore((s) => s.logout);
   const perms = usePermissions();
   const { getSetting } = useSettings();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   const pharmacyName = language === 'ar'
     ? (getSetting<string>('PHARMACY_NAME_AR') || getSetting<string>('PHARMACY_NAME') || 'Head Office')
@@ -121,6 +137,34 @@ export function Sidebar() {
           ...(perms.canCreatePurchase
             ? [{ key: '/purchases', icon: <ShoppingOutlined />, label: t('purchases') } as ItemType]
             : []),
+          ...(perms.canManageSuppliers
+            ? [{ key: '/suppliers', icon: <TruckOutlined />, label: t('suppliers', 'Suppliers') } as ItemType]
+            : []),
+        ]
+      : []),
+
+    // ── FINANCE ──
+    ...(perms.canManageExpenses
+      ? [
+          !collapsed
+            ? ({ type: 'group' as const, label: <CategoryLabel label="FINANCE" />, children: [] } as ItemType)
+            : ({ type: 'divider' as const } as ItemType),
+          { key: '/expenses', icon: <WalletOutlined />, label: t('expenses', 'Expenses') } as ItemType,
+        ]
+      : []),
+
+    // ── OPERATIONS ──
+    ...((perms.canManageBranches || perms.canTransferStock)
+      ? [
+          !collapsed
+            ? ({ type: 'group' as const, label: <CategoryLabel label="OPERATIONS" />, children: [] } as ItemType)
+            : ({ type: 'divider' as const } as ItemType),
+          ...(perms.canManageBranches
+            ? [{ key: '/branches', icon: <BranchesOutlined />, label: t('branches', 'Branches') } as ItemType]
+            : []),
+          ...(perms.canTransferStock
+            ? [{ key: '/stock-transfers', icon: <SwapOutlined />, label: t('stockTransfers', 'Stock Transfers') } as ItemType]
+            : []),
         ]
       : []),
 
@@ -141,14 +185,20 @@ export function Sidebar() {
                   { key: '/reports/inventory', icon: <InboxOutlined />, label: t('inventoryReport', 'Inventory') },
                   { key: '/reports/ar', icon: <CreditCardOutlined />, label: t('arReport', 'Receivables') },
                   { key: '/reports/shifts', icon: <ClockCircleOutlined />, label: t('shiftReport', 'Shifts') },
+                  { key: '/reports/audit', icon: <AuditOutlined />, label: t('auditReport', 'Audit Log') },
+                  { key: '/reports/pnl', icon: <AccountBookOutlined />, label: t('pnlReport', 'P&L') },
+                  { key: '/reports/cashflow', icon: <FundOutlined />, label: t('cashFlowReport', 'Cash Flow') },
+                  { key: '/reports/ap', icon: <BankOutlined />, label: t('apReport', 'Payables') },
                 ],
-              } as ItemType]
-            : []),
-          ...(perms.canAccessSettings
-            ? [{ key: '/settings', icon: <SettingOutlined />, label: t('settings') } as ItemType]
+              } as ItemType,
+              { type: 'divider' as const } as ItemType,
+              ]
             : []),
           ...(perms.canManageUsers
             ? [{ key: '/users', icon: <UserOutlined />, label: t('users') } as ItemType]
+            : []),
+          ...(perms.canAccessSettings
+            ? [{ key: '/settings', icon: <SettingOutlined />, label: t('settings') } as ItemType]
             : []),
         ]
       : []),
@@ -167,9 +217,12 @@ export function Sidebar() {
         background: 'var(--app-color-bg-container)',
         borderInlineEnd: '1px solid var(--app-color-border)',
         boxShadow: '2px 0 8px rgba(0, 0, 0, 0.06)',
-        overflow: 'auto',
+        overflow: 'hidden',
       }}
     >
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      {/* ── Scrollable content ── */}
+      <div style={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
       {/* ── Company + Branch Card (single component) ── */}
       <div style={{ padding: collapsed ? '12px 6px' : '12px 14px 10px' }}>
         <div className="sidebar-company-card">
@@ -271,6 +324,57 @@ export function Sidebar() {
           }}
         />
       </div>
+      </div>
+
+      {/* ── Logout button (pinned to bottom) ── */}
+      <div
+        style={{
+          padding: collapsed ? '14px 8px' : '14px 14px',
+          borderTop: '1px solid var(--app-color-border)',
+          flexShrink: 0,
+          background: 'linear-gradient(to top, var(--app-color-bg-container) 80%, transparent)',
+        }}
+      >
+        <div
+          onClick={handleLogout}
+          className="sidebar-logout-btn"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: collapsed ? 'center' : 'flex-start',
+            gap: 12,
+            padding: collapsed ? '11px' : '11px 16px',
+            borderRadius: 12,
+            cursor: 'pointer',
+            color: '#dc2626',
+            background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.06), rgba(239, 68, 68, 0.02))',
+            border: '1.5px solid rgba(239, 68, 68, 0.12)',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+        >
+          <span className="sidebar-logout-icon" style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 30,
+            height: 30,
+            borderRadius: 8,
+            background: 'rgba(239, 68, 68, 0.08)',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            flexShrink: 0,
+          }}>
+            <LogoutOutlined style={{ fontSize: 15 }} />
+          </span>
+          {!collapsed && (
+            <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: '0.3px' }}>
+              {t('logout')}
+            </span>
+          )}
+        </div>
+      </div>
+      </div>
 
       {/* ── Scoped overrides ── */}
       <style>{`
@@ -334,6 +438,51 @@ export function Sidebar() {
         .ant-layout-sider .ant-menu-submenu-selected > .ant-menu-submenu-title .anticon {
           color: var(--app-color-primary) !important;
         }
+        @keyframes logoutShimmer {
+          0% { background-position: -200% center; }
+          100% { background-position: 200% center; }
+        }
+        @keyframes logoutIconPulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.08); }
+        }
+
+        .sidebar-logout-btn::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          border-radius: 12px;
+          background: linear-gradient(
+            90deg,
+            transparent 0%,
+            rgba(239, 68, 68, 0.06) 50%,
+            transparent 100%
+          );
+          background-size: 200% 100%;
+          opacity: 0;
+          transition: opacity 0.3s;
+        }
+        .sidebar-logout-btn:hover::before {
+          opacity: 1;
+          animation: logoutShimmer 2s ease infinite;
+        }
+        .sidebar-logout-btn:hover {
+          background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05)) !important;
+          border-color: rgba(239, 68, 68, 0.3) !important;
+          color: #dc2626 !important;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px rgba(239, 68, 68, 0.18), 0 1px 4px rgba(239, 68, 68, 0.1);
+        }
+        .sidebar-logout-btn:hover .sidebar-logout-icon {
+          background: rgba(239, 68, 68, 0.15) !important;
+          animation: logoutIconPulse 1.5s ease-in-out infinite;
+        }
+        .sidebar-logout-btn:active {
+          transform: translateY(0) scale(0.98);
+          box-shadow: 0 1px 4px rgba(239, 68, 68, 0.1);
+          transition: all 0.1s;
+        }
+
         .ant-layout-sider .ant-menu-sub.ant-menu-inline .ant-menu-item {
           height: 36px !important;
           line-height: 36px !important;

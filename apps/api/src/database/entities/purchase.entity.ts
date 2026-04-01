@@ -3,6 +3,7 @@ import { BaseEntity } from '../base.entity';
 import { PurchaseStatus } from '@pharmapos/shared';
 import { Supplier } from './supplier.entity';
 import { User } from './user.entity';
+import { Branch } from './branch.entity';
 import { PurchaseItem } from './purchase-item.entity';
 import { AuditLog } from './audit-log.entity';
 
@@ -51,4 +52,11 @@ export class Purchase extends BaseEntity {
 
   @OneToMany(() => AuditLog, (log) => log.purchase)
   auditLogs: AuditLog[];
+
+  @Column({ type: 'uuid', nullable: true })
+  branchId: string | null;
+
+  @ManyToOne(() => Branch)
+  @JoinColumn({ name: 'branch_id' })
+  branch: Branch;
 }

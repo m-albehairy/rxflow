@@ -1,4 +1,5 @@
-import { IsString, IsOptional, IsBoolean, IsNumber } from 'class-validator';
+import { IsString, IsOptional, IsBoolean, IsNumber, IsInt } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class UpdateSupplierDto {
   @IsString() @IsOptional() nameEn?: string;
@@ -10,5 +11,11 @@ export class UpdateSupplierDto {
   @IsString() @IsOptional() taxNumber?: string;
   @IsString() @IsOptional() notes?: string;
   @IsBoolean() @IsOptional() isActive?: boolean;
+  @IsOptional() @Type(() => Number) @IsInt() paymentTermDays?: number;
+  @IsString() @IsOptional() creditLimit?: string;
+  @IsString() @IsOptional() openingBalance?: string;
+  @IsString() @IsOptional() bankName?: string;
+  @IsString() @IsOptional() bankAccount?: string;
+  @IsString() @IsOptional() commercialRegNo?: string;
   @IsNumber() version: number;
 }

@@ -49,7 +49,10 @@ export function POSPage() {
   const handleBarcodeScan = useCallback(
     async (barcode: string) => {
       try {
-        const res: any = await productsApi.getByBarcode(barcode);
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(barcode);
+        const res: any = isUUID
+          ? await productsApi.getById(barcode)
+          : await productsApi.getByBarcode(barcode);
         const product = res.data || res;
         addItem({
           productId: product.id,

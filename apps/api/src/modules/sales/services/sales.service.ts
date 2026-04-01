@@ -204,6 +204,15 @@ export class SalesService {
         profitMargin: profitMargin.toFixed(2),
       });
 
+      await this.auditService.log(queryRunner, {
+        userId: user.id,
+        action: AuditAction.INVOICE_CREATED,
+        entityType: 'Invoice',
+        entityId: invoice.id,
+        invoiceId: invoice.id,
+        after: { invoiceNumber: invoice.invoiceNumber, total: total.toFixed(4), itemCount: dto.items.length },
+      });
+
       // Create payment records
       for (const payment of dto.payments) {
         await queryRunner.manager.save(Payment, {

@@ -1,0 +1,22 @@
+@media print {
+  body > *:not(.barcode-print-overlay) {
+    display: none !important;
+  }
+  .barcode-print-overlay {
+    display: block !important;
+    position: static !important;
+  }
+  .barcode-print-container {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 2mm;
+    padding: 2mm;
+  }
+  .barcode-label {
+    page-break-inside: avoid;
+    border: 0.5px dashed #ccc;
+  }
+  @page {
+    margin: 3mm;
+  }
+}

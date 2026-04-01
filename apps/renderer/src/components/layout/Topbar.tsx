@@ -7,7 +7,6 @@ import {
   Avatar,
   Typography,
   Input,
-  Badge,
   Breadcrumb,
   Tooltip,
   Tag,
@@ -18,7 +17,6 @@ import {
   MenuUnfoldOutlined,
   LogoutOutlined,
   SearchOutlined,
-  BellOutlined,
   FullscreenOutlined,
   FullscreenExitOutlined,
   HomeOutlined,
@@ -34,6 +32,8 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useUIStore } from '@/store/ui.store';
 import { useAuthStore } from '@/store/auth.store';
 import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
+import { NotificationPanel } from '@/components/common/NotificationPanel';
+import { BranchSelector } from '@/components/common/BranchSelector';
 
 const { Header } = Layout;
 const { Text } = Typography;
@@ -205,6 +205,8 @@ export function Topbar() {
             2025-2026
           </Tag>
 
+          <BranchSelector />
+
           <Divider type="vertical" style={{ height: 20, margin: '0 4px' }} />
 
           {/* Action icons */}
@@ -232,11 +234,7 @@ export function Topbar() {
             <Button type="text" size="small" icon={<LockOutlined />} style={iconBtnStyle} />
           </Tooltip>
 
-          <Tooltip title="Notifications">
-            <Badge count={4} size="small" offset={[-4, 4]}>
-              <Button type="text" size="small" icon={<BellOutlined />} style={iconBtnStyle} />
-            </Badge>
-          </Tooltip>
+          <NotificationPanel />
 
           <Divider type="vertical" style={{ height: 20, margin: '0 4px' }} />
 
