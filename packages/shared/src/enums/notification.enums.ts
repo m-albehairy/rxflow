@@ -6,6 +6,8 @@ export enum NotificationType {
   SYSTEM_ALERT = 'SYSTEM_ALERT',
   EXPENSE_APPROVAL = 'EXPENSE_APPROVAL',
   TRANSFER_REQUEST = 'TRANSFER_REQUEST',
+  SALE_ALERT = 'SALE_ALERT',
+  CREDIT_ALERT = 'CREDIT_ALERT',
 }
 
 export enum NotificationSeverity {

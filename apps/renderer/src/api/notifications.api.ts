@@ -7,6 +7,9 @@ export const notificationsApi = {
   getUnreadCount: () =>
     apiClient.get('/notifications/unread-count'),
 
+  getNewSince: (since: string) =>
+    apiClient.get('/notifications', { params: { since, limit: 50 } }),
+
   markAsRead: (id: string) =>
     apiClient.patch(`/notifications/${id}/read`),
 
@@ -16,6 +19,6 @@ export const notificationsApi = {
   getPreferences: () =>
     apiClient.get('/notifications/preferences'),
 
-  updatePreferences: (data: Record<string, boolean>) =>
+  updatePreferences: (data: Record<string, unknown>) =>
     apiClient.patch('/notifications/preferences', data),
 };

@@ -61,9 +61,18 @@ function getNavigationPath(entityType: string | null): string | null {
     case 'Product':
       return '/products';
     case 'CreditAccount':
+    case 'Customer':
       return '/customers';
     case 'Batch':
       return '/inventory';
+    case 'Expense':
+      return '/expenses';
+    case 'StockTransfer':
+      return '/stock-transfers';
+    case 'Shift':
+      return '/pos';
+    case 'Invoice':
+      return '/sales';
     default:
       return null;
   }
@@ -168,6 +177,9 @@ export function NotificationPanel() {
                     : 'var(--app-color-bg-layout)',
                   transition: 'background 0.2s',
                   borderBottom: '1px solid var(--app-color-border)',
+                  borderInlineStart: item.severity === 'CRITICAL'
+                    ? '3px solid #f5222d'
+                    : '3px solid transparent',
                 }}
               >
                 <Space

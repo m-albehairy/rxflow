@@ -3,6 +3,7 @@ import * as path from 'path';
 import { registerPrinterHandlers } from './hardware/printer.ipc';
 import { registerDrawerHandlers } from './hardware/drawer.ipc';
 import { registerScannerHandlers } from './hardware/scanner.ipc';
+import { registerNotificationHandlers } from './notifications/notification.ipc';
 
 const isDev = process.env.ELECTRON_IS_DEV === 'true';
 
@@ -43,6 +44,7 @@ app.whenReady().then(() => {
   registerPrinterHandlers(ipcMain);
   registerDrawerHandlers(ipcMain);
   registerScannerHandlers(ipcMain);
+  registerNotificationHandlers(ipcMain, () => mainWindow);
 
   // Hardware status handler
   ipcMain.handle('hardware:get-status', async () => {

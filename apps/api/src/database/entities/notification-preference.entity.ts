@@ -39,4 +39,28 @@ export class NotificationPreference {
 
   @Column({ default: true })
   transferRequest: boolean;
+
+  @Column({ default: true })
+  saleAlert: boolean;
+
+  @Column({ default: true })
+  creditAlert: boolean;
+
+  @Column({ default: true })
+  desktopEnabled: boolean;
+
+  @Column({ default: true })
+  soundEnabled: boolean;
+
+  @Column({ type: 'decimal', precision: 14, scale: 4, nullable: true })
+  largeSaleThreshold: number | null;
+
+  @Column({ type: 'int', nullable: true })
+  shiftMaxHours: number | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  quietHoursStart: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  quietHoursEnd: string | null;
 }

@@ -3,15 +3,18 @@ import { Layout } from 'antd';
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
+import { ConnectionStatusBanner } from '@/components/common/ConnectionStatusBanner';
 import { useUIStore } from '@/store/ui.store';
 import { useAuthStore } from '@/store/auth.store';
 import { LockScreen } from '@/components/common/LockScreen';
+import { useStartupNotifications } from '@/hooks/useStartupNotifications';
 
 const { Content } = Layout;
 
 export function AppLayout() {
   const sidebarCollapsed = useUIStore((s) => s.sidebarCollapsed);
   const isLocked = useAuthStore((s) => s.isLocked);
+  useStartupNotifications();
 
   if (isLocked) {
     return <LockScreen />;
@@ -21,6 +24,7 @@ export function AppLayout() {
     <Layout style={{ minHeight: '100vh', background: 'var(--app-color-bg-container)' }}>
       <Sidebar />
       <Layout style={{ background: 'var(--app-color-bg-layout)' }}>
+        <ConnectionStatusBanner />
         <Topbar />
         <Content
           style={{

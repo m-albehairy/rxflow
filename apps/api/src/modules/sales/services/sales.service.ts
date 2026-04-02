@@ -14,11 +14,16 @@ import { SettingsCacheService } from '../../../shared/settings/settings-cache.se
 import { MedicalService } from '../../../database/entities/medical-service.entity';
 import { ErrorMessages } from '../../../common/constants/error-messages';
 import { AuditAction, InvoiceStatus, InvoiceItemType, INVOICE_PREFIX_DEFAULT, DEFAULT_PAGE, DEFAULT_LIMIT, MAX_LIMIT, ServiceType } from '@pharmapos/shared';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CreateInvoiceDto } from '../dto/create-invoice.dto';
 import { QuoteDto } from '../dto/quote.dto';
 import { FilterInvoiceDto } from '../dto/filter-invoice.dto';
 import { RefundDto } from '../dto/refund.dto';
 import { AuthenticatedUser } from '../../../common/interfaces/request.interface';
+import {
+  LARGE_SALE_EVENT, SALE_VOIDED_EVENT, SALE_REFUNDED_EVENT, BELOW_COST_SALE_EVENT,
+  LargeSaleEvent, SaleVoidedEvent, SaleRefundedEvent, BelowCostSaleEvent,
+} from '../../notifications/events/notification.events';
 
 Decimal.set({ precision: 20, rounding: Decimal.ROUND_HALF_UP });
 
@@ -33,6 +38,7 @@ export class SalesService {
     private auditService: AuditService,
     private settingsCache: SettingsCacheService,
     private dataSource: DataSource,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   async quote(dto: QuoteDto, user: AuthenticatedUser) {
@@ -277,6 +283,34 @@ export class SalesService {
       }
 
       await queryRunner.commitTransaction();
+
+      // Emit event-driven notifications (after commit)
+      const largeSaleThreshold = await this.settingsCache.getOrDefault<number>('LARGE_SALE_THRESHOLD', 5000);
+      if (total.toNumber() >= largeSaleThreshold) {
+        this.eventEmitter.emit(
+          LARGE_SALE_EVENT,
+          new LargeSaleEvent(invoice.id, invoiceNumber, total.toNumber(), user.id, ''),
+        );
+      }
+
+      // Emit below-cost sale events for each item
+      for (const item of dto.items) {
+        const itemType = (item.itemType as InvoiceItemType) || InvoiceItemType.PRODUCT;
+        if (itemType === InvoiceItemType.SERVICE) continue;
+        const cost = new Decimal(item.cost);
+        const sp = new Decimal(item.sellingPrice);
+        if (sp.lessThan(cost) && item.productId) {
+          this.eventEmitter.emit(
+            BELOW_COST_SALE_EVENT,
+            new BelowCostSaleEvent(
+              invoice.id, item.productId,
+              '', '',
+              cost.toNumber(), sp.toNumber(), user.id,
+            ),
+          );
+        }
+      }
+
       return this.findById(invoice.id);
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -342,6 +376,12 @@ export class SalesService {
       });
 
       await queryRunner.commitTransaction();
+
+      this.eventEmitter.emit(
+        SALE_VOIDED_EVENT,
+        new SaleVoidedEvent(id, invoice.invoiceNumber, parseFloat(invoice.total), userId),
+      );
+
       return this.findById(id);
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -388,6 +428,15 @@ export class SalesService {
       });
 
       await queryRunner.commitTransaction();
+
+      this.eventEmitter.emit(
+        SALE_REFUNDED_EVENT,
+        new SaleRefundedEvent(
+          id, refundInvoice.id, original.invoiceNumber,
+          parseFloat(dto.refundAmount), userId,
+        ),
+      );
+
       return this.findById(refundInvoice.id);
     } catch (error) {
       await queryRunner.rollbackTransaction();

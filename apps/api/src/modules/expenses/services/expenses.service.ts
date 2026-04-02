@@ -6,9 +6,14 @@ import { Expense } from '../../../database/entities/expense.entity';
 import { SequenceService } from '../../../shared/sequence/sequence.service';
 import { AuditService } from '../../../shared/audit/audit.service';
 import { AuditAction, ExpenseStatus, EXPENSE_PREFIX_DEFAULT, DEFAULT_PAGE, DEFAULT_LIMIT, MAX_LIMIT } from '@pharmapos/shared';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CreateExpenseDto } from '../dto/create-expense.dto';
 import { UpdateExpenseDto } from '../dto/update-expense.dto';
 import { FilterExpenseDto } from '../dto/filter-expense.dto';
+import {
+  EXPENSE_SUBMITTED_EVENT, EXPENSE_APPROVED_EVENT, EXPENSE_REJECTED_EVENT,
+  ExpenseSubmittedEvent, ExpenseApprovedEvent, ExpenseRejectedEvent,
+} from '../../notifications/events/notification.events';
 
 Decimal.set({ precision: 20, rounding: Decimal.ROUND_HALF_UP });
 
@@ -19,6 +24,7 @@ export class ExpensesService {
     private sequenceService: SequenceService,
     private auditService: AuditService,
     private dataSource: DataSource,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   async findAll(filter: FilterExpenseDto) {
@@ -84,6 +90,15 @@ export class ExpensesService {
       });
 
       await queryRunner.commitTransaction();
+
+      this.eventEmitter.emit(
+        EXPENSE_SUBMITTED_EVENT,
+        new ExpenseSubmittedEvent(
+          expense.id, amount.toNumber(), dto.category,
+          dto.description || '', userId,
+        ),
+      );
+
       return this.findById(expense.id);
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -169,6 +184,14 @@ export class ExpensesService {
       });
 
       await queryRunner.commitTransaction();
+
+      this.eventEmitter.emit(
+        EXPENSE_APPROVED_EVENT,
+        new ExpenseApprovedEvent(
+          id, parseFloat(expense.amount), userId, expense.createdBy,
+        ),
+      );
+
       return this.findById(id);
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -206,6 +229,14 @@ export class ExpensesService {
       });
 
       await queryRunner.commitTransaction();
+
+      this.eventEmitter.emit(
+        EXPENSE_REJECTED_EVENT,
+        new ExpenseRejectedEvent(
+          id, parseFloat(expense.amount), userId, expense.createdBy,
+        ),
+      );
+
       return this.findById(id);
     } catch (error) {
       await queryRunner.rollbackTransaction();

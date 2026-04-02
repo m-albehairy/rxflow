@@ -7,8 +7,13 @@ import { CreditPayment } from '../../../database/entities/credit-payment.entity'
 import { AuditService } from '../../../shared/audit/audit.service';
 import { ErrorMessages } from '../../../common/constants/error-messages';
 import { AuditAction, CreditStatus } from '@pharmapos/shared';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UpdateCreditAccountDto } from '../dto/update-credit-account.dto';
 import { CreditPaymentDto } from '../dto/credit-payment.dto';
+import {
+  CREDIT_LIMIT_APPROACHING_EVENT,
+  CreditLimitApproachingEvent,
+} from '../../notifications/events/notification.events';
 
 Decimal.set({ precision: 20, rounding: Decimal.ROUND_HALF_UP });
 
@@ -19,6 +24,7 @@ export class CreditService {
     @InjectRepository(CreditPayment) private paymentRepo: Repository<CreditPayment>,
     private auditService: AuditService,
     private dataSource: DataSource,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   async getAccount(customerId: string): Promise<CreditAccount> {
@@ -48,7 +54,34 @@ export class CreditService {
     const account = await this.getOrCreateAccount(customerId);
     if (dto.creditLimit !== undefined) account.creditLimit = dto.creditLimit;
     if (dto.status !== undefined) account.status = dto.status;
-    return this.creditRepo.save(account);
+    const saved = await this.creditRepo.save(account);
+    this.checkAndEmitCreditLimitWarning(saved);
+    return saved;
+  }
+
+  /**
+   * Check if balance is approaching the credit limit (remaining capacity < 20%).
+   * Can be called externally (e.g., after a credit sale increases balance).
+   */
+  checkAndEmitCreditLimitWarning(account: CreditAccount): void {
+    const limit = new Decimal(account.creditLimit || '0');
+    if (limit.isZero()) return;
+    const balance = new Decimal(account.currentBalance || '0');
+    const remaining = limit.minus(balance);
+    const threshold = limit.times(0.2);
+    if (remaining.lessThanOrEqualTo(threshold) && balance.greaterThan(0)) {
+      this.eventEmitter.emit(
+        CREDIT_LIMIT_APPROACHING_EVENT,
+        new CreditLimitApproachingEvent(
+          account.customerId,
+          account.customer?.name || '',
+          account.customer?.nameAr || account.customer?.name || '',
+          balance.toNumber(),
+          limit.toNumber(),
+          account.customerId,
+        ),
+      );
+    }
   }
 
   async collectPayment(customerId: string, dto: CreditPaymentDto, userId: string): Promise<CreditPayment> {

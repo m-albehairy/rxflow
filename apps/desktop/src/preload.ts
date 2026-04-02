@@ -12,4 +12,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
   hardware: {
     getStatus: () => ipcRenderer.invoke('hardware:get-status'),
   },
+  notifications: {
+    showNative: (data: { title: string; body: string; severity?: string; silent?: boolean }) =>
+      ipcRenderer.invoke('notification:show-native', data),
+    setBadgeCount: (count: number) =>
+      ipcRenderer.invoke('notification:set-badge-count', count),
+    clearBadge: () => ipcRenderer.invoke('notification:clear-badge'),
+    onClicked: (callback: () => void) => {
+      ipcRenderer.on('notification:clicked', callback);
+      return () => ipcRenderer.removeListener('notification:clicked', callback);
+    },
+  },
 });

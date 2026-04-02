@@ -8,9 +8,14 @@ import { Inventory } from '../../../database/entities/inventory.entity';
 import { SequenceService } from '../../../shared/sequence/sequence.service';
 import { AuditService } from '../../../shared/audit/audit.service';
 import { AuditAction, StockTransferStatus } from '@pharmapos/shared';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CreateStockTransferDto } from '../dto/create-stock-transfer.dto';
 import { FilterStockTransferDto } from '../dto/filter-stock-transfer.dto';
 import { DEFAULT_PAGE, DEFAULT_LIMIT, MAX_LIMIT } from '@pharmapos/shared';
+import {
+  TRANSFER_CREATED_EVENT, TRANSFER_APPROVED_EVENT, TRANSFER_REJECTED_EVENT,
+  TransferCreatedEvent, TransferApprovedEvent, TransferRejectedEvent,
+} from '../../notifications/events/notification.events';
 
 Decimal.set({ precision: 20, rounding: Decimal.ROUND_HALF_UP });
 
@@ -22,6 +27,7 @@ export class StockTransfersService {
     private sequenceService: SequenceService,
     private auditService: AuditService,
     private dataSource: DataSource,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   async findAll(filter: FilterStockTransferDto) {
@@ -98,7 +104,19 @@ export class StockTransfersService {
       });
 
       await queryRunner.commitTransaction();
-      return this.findById(transfer.id);
+
+      const fullTransfer = await this.findById(transfer.id);
+      this.eventEmitter.emit(
+        TRANSFER_CREATED_EVENT,
+        new TransferCreatedEvent(
+          transfer.id, transferNumber,
+          dto.fromBranchId, fullTransfer.fromBranch?.nameEn || '',
+          fullTransfer.fromBranch?.nameAr || '',
+          dto.toBranchId, userId,
+        ),
+      );
+
+      return fullTransfer;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw error;
@@ -126,6 +144,11 @@ export class StockTransfersService {
       metadata: { transferNumber: transfer.transferNumber },
     });
 
+    this.eventEmitter.emit(
+      TRANSFER_APPROVED_EVENT,
+      new TransferApprovedEvent(id, transfer.transferNumber, userId, transfer.requestedById),
+    );
+
     return this.findById(id);
   }
 
@@ -147,6 +170,11 @@ export class StockTransfersService {
       entityId: id,
       metadata: { transferNumber: transfer.transferNumber },
     });
+
+    this.eventEmitter.emit(
+      TRANSFER_REJECTED_EVENT,
+      new TransferRejectedEvent(id, transfer.transferNumber, userId, transfer.requestedById),
+    );
 
     return this.findById(id);
   }

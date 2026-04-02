@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DataSource, MoreThan } from 'typeorm';
 import { Notification } from '../../../database/entities/notification.entity';
 import { NotificationPreference } from '../../../database/entities/notification-preference.entity';
 import { NotificationType, NotificationSeverity, DEFAULT_PAGE, DEFAULT_LIMIT, MAX_LIMIT } from '@pharmapos/shared';
@@ -14,6 +14,7 @@ export class NotificationsService {
     private notificationRepo: Repository<Notification>,
     @InjectRepository(NotificationPreference)
     private preferenceRepo: Repository<NotificationPreference>,
+    private dataSource: DataSource,
   ) {}
 
   async findForUser(userId: string, filter: FilterNotificationsDto) {
@@ -23,6 +24,9 @@ export class NotificationsService {
     const where: any = { userId };
     if (filter.isRead !== undefined) {
       where.isRead = filter.isRead;
+    }
+    if (filter.since) {
+      where.createdAt = MoreThan(new Date(filter.since));
     }
 
     const [data, total] = await this.notificationRepo.findAndCount({
@@ -131,5 +135,43 @@ export class NotificationsService {
     );
 
     await this.notificationRepo.save(entities);
+  }
+
+  /**
+   * Find active users with any of the specified permissions.
+   */
+  async getTargetUsers(permissions: string[]): Promise<string[]> {
+    const users: Array<{ id: string; permissions: Record<string, boolean | number> }> =
+      await this.dataSource.query(`
+        SELECT u.id, r.permissions
+        FROM users u
+        JOIN roles r ON u.role_id = r.id
+        WHERE u.is_active = true
+          AND u.deleted_at IS NULL
+      `);
+
+    return users
+      .filter((u) => {
+        const perms = typeof u.permissions === 'string'
+          ? JSON.parse(u.permissions)
+          : u.permissions;
+        return permissions.some((p) => perms[p] === true);
+      })
+      .map((u) => u.id);
+  }
+
+  /**
+   * Check if an unread notification already exists for de-duplication.
+   */
+  async hasUnreadNotification(
+    userId: string,
+    type: NotificationType,
+    entityId: string,
+  ): Promise<boolean> {
+    const result = await this.dataSource.query(
+      `SELECT 1 FROM notifications WHERE user_id = $1 AND type = $2 AND entity_id = $3 AND is_read = false LIMIT 1`,
+      [userId, type, entityId],
+    );
+    return result.length > 0;
   }
 }

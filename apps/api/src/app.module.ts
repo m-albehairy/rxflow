@@ -27,6 +27,7 @@ import { BranchesModule } from './modules/branches/branches.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { MedicalServicesModule } from './modules/medical-services/medical-services.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { JwtAuthGuard } from './common/guards/jwt.guard';
 import { PermissionsGuard } from './common/guards/permissions.guard';
 
@@ -58,6 +59,7 @@ import { PermissionsGuard } from './common/guards/permissions.guard';
     NotificationsModule,
     MedicalServicesModule,
     ScheduleModule.forRoot(),
+    EventEmitterModule.forRoot(),
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },

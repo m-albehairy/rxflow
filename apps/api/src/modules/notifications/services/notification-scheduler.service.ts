@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { DataSource } from 'typeorm';
 import { NotificationsService } from './notifications.service';
+import { SettingsCacheService } from '../../../shared/settings/settings-cache.service';
 import { NotificationType, NotificationSeverity } from '@pharmapos/shared';
 
 @Injectable()
@@ -10,6 +11,7 @@ export class NotificationSchedulerService {
 
   constructor(
     private notificationsService: NotificationsService,
+    private settingsCache: SettingsCacheService,
     private dataSource: DataSource,
   ) {}
 
@@ -42,7 +44,7 @@ export class NotificationSchedulerService {
       if (lowStockItems.length === 0) return;
 
       // Find target users with relevant permissions
-      const targetUsers = await this.getTargetUsers([
+      const targetUsers = await this.notificationsService.getTargetUsers([
         'inventory:manage',
         'inventory:adjust',
         'purchases:create',
@@ -65,7 +67,7 @@ export class NotificationSchedulerService {
       for (const item of lowStockItems) {
         for (const userId of targetUsers) {
           // De-duplicate: skip if unread notification already exists
-          const exists = await this.hasUnreadNotification(
+          const exists = await this.notificationsService.hasUnreadNotification(
             userId,
             NotificationType.LOW_STOCK,
             item.product_id,
@@ -135,7 +137,7 @@ export class NotificationSchedulerService {
 
       if (nearExpiryBatches.length === 0) return;
 
-      const targetUsers = await this.getTargetUsers([
+      const targetUsers = await this.notificationsService.getTargetUsers([
         'inventory:manage',
         'inventory:adjust',
       ]);
@@ -156,7 +158,7 @@ export class NotificationSchedulerService {
 
       for (const batch of nearExpiryBatches) {
         for (const userId of targetUsers) {
-          const exists = await this.hasUnreadNotification(
+          const exists = await this.notificationsService.hasUnreadNotification(
             userId,
             NotificationType.NEAR_EXPIRY,
             batch.batch_id,
@@ -228,7 +230,7 @@ export class NotificationSchedulerService {
 
       if (overdueAccounts.length === 0) return;
 
-      const targetUsers = await this.getTargetUsers([
+      const targetUsers = await this.notificationsService.getTargetUsers([
         'credit:manage',
         'customers:manage',
       ]);
@@ -249,7 +251,7 @@ export class NotificationSchedulerService {
 
       for (const account of overdueAccounts) {
         for (const userId of targetUsers) {
-          const exists = await this.hasUnreadNotification(
+          const exists = await this.notificationsService.hasUnreadNotification(
             userId,
             NotificationType.OVERDUE_CREDIT,
             account.account_id,
@@ -280,40 +282,168 @@ export class NotificationSchedulerService {
   }
 
   /**
-   * Find active users with any of the specified permissions.
+   * Check for shifts that have been open too long (every 30 minutes).
+   * Notifies the cashier and shift managers.
    */
-  private async getTargetUsers(permissions: string[]): Promise<string[]> {
-    const users: Array<{ id: string; permissions: Record<string, boolean | number> }> =
-      await this.dataSource.query(`
-        SELECT u.id, r.permissions
+  @Cron('0 */30 * * * *')
+  async checkLongOpenShifts(): Promise<void> {
+    try {
+      const maxHours = await this.settingsCache.getOrDefault<number>('SHIFT_MAX_HOURS', 10);
+
+      const openShifts: Array<{
+        shift_id: string;
+        shift_number: string;
+        opened_at: Date;
+        user_id: string;
+      }> = await this.dataSource.query(
+        `
+        SELECT s.id AS shift_id, s.shift_number, s.opened_at, s.user_id
+        FROM shifts s
+        WHERE s.status = 'OPEN'
+          AND s.opened_at < NOW() - INTERVAL '1 hour' * $1
+      `,
+        [maxHours],
+      );
+
+      if (openShifts.length === 0) return;
+
+      const managers = await this.notificationsService.getTargetUsers([
+        'shifts:manage',
+      ]);
+
+      const notifications: Array<{
+        userId: string;
+        type: NotificationType;
+        title: string;
+        titleAr: string;
+        message: string;
+        messageAr: string;
+        entityType: string;
+        entityId: string;
+        severity: NotificationSeverity;
+      }> = [];
+
+      for (const shift of openShifts) {
+        const hoursOpen = Math.round(
+          (Date.now() - new Date(shift.opened_at).getTime()) / (1000 * 60 * 60),
+        );
+
+        // Notify the cashier
+        const cashierExists = await this.notificationsService.hasUnreadNotification(
+          shift.user_id,
+          NotificationType.SHIFT_REMINDER,
+          shift.shift_id,
+        );
+        if (!cashierExists) {
+          notifications.push({
+            userId: shift.user_id,
+            type: NotificationType.SHIFT_REMINDER,
+            title: `Shift Open Too Long: #${shift.shift_number}`,
+            titleAr: `وردية مفتوحة لفترة طويلة: #${shift.shift_number}`,
+            message: `Your shift has been open for ${hoursOpen} hours. Please reconcile and close.`,
+            messageAr: `ورديتك مفتوحة منذ ${hoursOpen} ساعة. يرجى المطابقة والإغلاق.`,
+            entityType: 'Shift',
+            entityId: shift.shift_id,
+            severity: NotificationSeverity.WARNING,
+          });
+        }
+
+        // Notify managers
+        for (const managerId of managers) {
+          if (managerId === shift.user_id) continue;
+          const exists = await this.notificationsService.hasUnreadNotification(
+            managerId,
+            NotificationType.SHIFT_REMINDER,
+            shift.shift_id,
+          );
+          if (exists) continue;
+          notifications.push({
+            userId: managerId,
+            type: NotificationType.SHIFT_REMINDER,
+            title: `Shift Open Too Long: #${shift.shift_number}`,
+            titleAr: `وردية مفتوحة لفترة طويلة: #${shift.shift_number}`,
+            message: `Shift #${shift.shift_number} has been open for ${hoursOpen} hours.`,
+            messageAr: `الوردية #${shift.shift_number} مفتوحة منذ ${hoursOpen} ساعة.`,
+            entityType: 'Shift',
+            entityId: shift.shift_id,
+            severity: NotificationSeverity.WARNING,
+          });
+        }
+      }
+
+      if (notifications.length > 0) {
+        await this.notificationsService.createBulk(notifications);
+        this.logger.log(`Created ${notifications.length} long-open shift reminder(s).`);
+      }
+    } catch (error) {
+      this.logger.error('Failed to check long-open shifts', error);
+    }
+  }
+
+  /**
+   * Check if shifts have not been opened by 9 AM daily.
+   * Nudges POS users to open their shift.
+   */
+  @Cron('0 0 9 * * *')
+  async checkShiftNotOpened(): Promise<void> {
+    try {
+      const enabled = await this.settingsCache.getOrDefault<boolean>('SHIFT_OPEN_REMINDER', true);
+      if (!enabled) return;
+
+      // Find POS users with no open shift today
+      const usersWithoutShift: Array<{ id: string }> = await this.dataSource.query(`
+        SELECT u.id
         FROM users u
         JOIN roles r ON u.role_id = r.id
         WHERE u.is_active = true
           AND u.deleted_at IS NULL
+          AND (r.permissions::jsonb->>'pos:sell')::boolean = true
+          AND NOT EXISTS (
+            SELECT 1 FROM shifts s
+            WHERE s.user_id = u.id
+              AND s.status = 'OPEN'
+              AND s.opened_at >= CURRENT_DATE
+          )
       `);
 
-    return users
-      .filter((u) => {
-        const perms = typeof u.permissions === 'string'
-          ? JSON.parse(u.permissions)
-          : u.permissions;
-        return permissions.some((p) => perms[p] === true);
-      })
-      .map((u) => u.id);
-  }
+      if (usersWithoutShift.length === 0) return;
 
-  /**
-   * Check if an unread notification already exists for de-duplication.
-   */
-  private async hasUnreadNotification(
-    userId: string,
-    type: NotificationType,
-    entityId: string,
-  ): Promise<boolean> {
-    const result = await this.dataSource.query(
-      `SELECT 1 FROM notifications WHERE user_id = $1 AND type = $2 AND entity_id = $3 AND is_read = false LIMIT 1`,
-      [userId, type, entityId],
-    );
-    return result.length > 0;
+      const notifications: Array<{
+        userId: string;
+        type: NotificationType;
+        title: string;
+        titleAr: string;
+        message: string;
+        messageAr: string;
+        severity: NotificationSeverity;
+      }> = [];
+
+      const today = new Date().toISOString().split('T')[0];
+      for (const user of usersWithoutShift) {
+        const exists = await this.notificationsService.hasUnreadNotification(
+          user.id,
+          NotificationType.SHIFT_REMINDER,
+          today,
+        );
+        if (exists) continue;
+
+        notifications.push({
+          userId: user.id,
+          type: NotificationType.SHIFT_REMINDER,
+          title: 'Shift Not Opened',
+          titleAr: 'لم يتم فتح وردية',
+          message: 'You have not opened a shift today. Please open a shift to begin selling.',
+          messageAr: 'لم تقم بفتح وردية اليوم. يرجى فتح وردية لبدء البيع.',
+          severity: NotificationSeverity.INFO,
+        });
+      }
+
+      if (notifications.length > 0) {
+        await this.notificationsService.createBulk(notifications);
+        this.logger.log(`Created ${notifications.length} shift-not-opened reminder(s).`);
+      }
+    } catch (error) {
+      this.logger.error('Failed to check shift-not-opened', error);
+    }
   }
 }
