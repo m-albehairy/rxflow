@@ -122,5 +122,19 @@
   "back": "رجوع",
   "processExchange": "معالجة الاستبدال",
   "yes": "نعم",
-  "no": "لا"
+  "no": "لا",
+  "saleComplete": "تمت عملية البيع!",
+  "invoiceCreated": "تم إنشاء الفاتورة #{{number}}",
+  "receiptInvoice": "فاتورة",
+  "receiptCashier": "الكاشير",
+  "receiptCustomer": "العميل",
+  "receiptPaid": "المدفوع",
+  "receiptItem": "الصنف",
+  "receiptPrice": "السعر",
+  "receiptDisc": "خصم%",
+  "receiptSubtotal": "المجموع الفرعي",
+  "receiptDiscount": "الخصم",
+  "receiptTax": "الضريبة",
+  "receiptTotal": "الإجمالي",
+  "receiptChange": "الباقي"
 }

@@ -15,14 +15,14 @@ import { useUIStore } from '@/store/ui.store';
 
 const { Title, Text } = Typography;
 
-const UNIT_OPTIONS = [
-  { label: 'Piece', value: 'piece' },
-  { label: 'Box', value: 'box' },
-  { label: 'Strip', value: 'strip' },
-  { label: 'Bottle', value: 'bottle' },
-  { label: 'Vial', value: 'vial' },
-  { label: 'Tube', value: 'tube' },
-  { label: 'Sachet', value: 'sachet' },
+const getUnitOptions = (t: any) => [
+  { label: t('unitPiece'), value: 'piece' },
+  { label: t('unitBox'), value: 'box' },
+  { label: t('unitStrip'), value: 'strip' },
+  { label: t('unitBottle'), value: 'bottle' },
+  { label: t('unitVial'), value: 'vial' },
+  { label: t('unitTube'), value: 'tube' },
+  { label: t('unitSachet'), value: 'sachet' },
 ];
 
 export function ProductsPage() {
@@ -69,24 +69,24 @@ export function ProductsPage() {
   const handleQuickCreate = async (values: any) => {
     try {
       await productsApi.create(values);
-      message.success('Product created');
+      message.success(t('productCreated'));
       setQuickOpen(false);
       quickForm.resetFields();
       loadProducts();
     } catch (err: any) {
-      message.error(err?.error?.message || 'Failed');
+      message.error(err?.error?.message || t('common:error'));
     }
   };
 
   const handleQuickUpdate = async (values: any) => {
     try {
       await productsApi.update(selectedProduct.id, values);
-      message.success('Product updated');
+      message.success(t('productUpdated'));
       setQuickEditing(false);
       setDetailOpen(false);
       loadProducts();
     } catch (err: any) {
-      message.error(err?.error?.message || 'Failed');
+      message.error(err?.error?.message || t('common:error'));
     }
   };
 
@@ -94,16 +94,16 @@ export function ProductsPage() {
     try {
       if (detailedMode === 'edit' && selectedProduct) {
         await productsApi.update(selectedProduct.id, values);
-        message.success('Product updated');
+        message.success(t('productUpdated'));
       } else {
         await productsApi.create(values);
-        message.success('Product created');
+        message.success(t('productCreated'));
       }
       setDetailedOpen(false);
       detailedForm.resetFields();
       loadProducts();
     } catch (err: any) {
-      message.error(err?.error?.message || 'Failed');
+      message.error(err?.error?.message || t('common:error'));
     }
   };
 
@@ -191,10 +191,10 @@ export function ProductsPage() {
     <>
       <Row gutter={16}>
         <Col xs={24} sm={12}>
-          <Form.Item name="nameEn" label="Name (EN)" rules={[{ required: true }]}><Input /></Form.Item>
+          <Form.Item name="nameEn" label={t('nameEnShort')} rules={[{ required: true }]}><Input /></Form.Item>
         </Col>
         <Col xs={24} sm={12}>
-          <Form.Item name="nameAr" label="Name (AR)" rules={[{ required: true }]}><Input /></Form.Item>
+          <Form.Item name="nameAr" label={t('nameArShort')} rules={[{ required: true }]}><Input /></Form.Item>
         </Col>
       </Row>
       <Form.Item name="barcode" label={t('barcode')}><Input /></Form.Item>
@@ -222,11 +222,11 @@ export function ProductsPage() {
       {/* ── Header ── */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <Space size="middle">
-          <Tooltip title="Quick create with basic fields">
+          <Tooltip title={t('quickCreateTooltip')}>
             <Button type="primary" icon={<PlusOutlined />} onClick={() => setQuickOpen(true)}>{t('addProduct')}</Button>
           </Tooltip>
-          <Tooltip title="Full form with all product details">
-            <Button icon={<ExpandOutlined />} onClick={openDetailedCreate}>Detailed</Button>
+          <Tooltip title={t('detailedTooltip')}>
+            <Button icon={<ExpandOutlined />} onClick={openDetailedCreate}>{t('detailed')}</Button>
           </Tooltip>
           <Button
             icon={<BarcodeOutlined />}
@@ -275,8 +275,8 @@ export function ProductsPage() {
         destroyOnHidden
         extra={
           <Space>
-            <Button onClick={() => setQuickOpen(false)}>Cancel</Button>
-            <Button type="primary" onClick={() => quickForm.submit()}>Save</Button>
+            <Button onClick={() => setQuickOpen(false)}>{t('common:cancel')}</Button>
+            <Button type="primary" onClick={() => quickForm.submit()}>{t('common:save')}</Button>
           </Space>
         }
       >
@@ -285,7 +285,7 @@ export function ProductsPage() {
         </Form>
         <Divider />
         <Button type="link" icon={<ExpandOutlined />} onClick={() => { setQuickOpen(false); openDetailedCreate(); }}>
-          Switch to detailed form
+          {t('switchToDetailed')}
         </Button>
       </Drawer>
 
@@ -380,7 +380,7 @@ export function ProductsPage() {
 
       {/* ── Detailed Create/Edit Drawer (Full Form) ── */}
       <Drawer
-        title={detailedMode === 'edit' ? 'Edit Product (Detailed)' : 'New Product (Detailed)'}
+        title={detailedMode === 'edit' ? t('editProductDetailed') : t('newProductDetailed')}
         open={detailedOpen}
         onClose={() => setDetailedOpen(false)}
         placement={isRTL ? 'left' : 'right'}
@@ -388,9 +388,9 @@ export function ProductsPage() {
         destroyOnHidden
         extra={
           <Space>
-            <Button onClick={() => setDetailedOpen(false)}>Cancel</Button>
+            <Button onClick={() => setDetailedOpen(false)}>{t('common:cancel')}</Button>
             <Button type="primary" onClick={() => detailedForm.submit()}>
-              {detailedMode === 'edit' ? 'Update' : 'Create'}
+              {detailedMode === 'edit' ? t('common:update') : t('common:create')}
             </Button>
           </Space>
         }
@@ -400,37 +400,37 @@ export function ProductsPage() {
             items={[
               {
                 key: 'basic',
-                label: <span><InfoCircleOutlined /> Basic Info</span>,
+                label: <span><InfoCircleOutlined /> {t('tabBasicInfo')}</span>,
                 children: (
                   <>
                     <Row gutter={16}>
                       <Col xs={24} sm={12}>
-                        <Form.Item name="nameEn" label="Name (English)" rules={[{ required: true }]}><Input /></Form.Item>
+                        <Form.Item name="nameEn" label={t('nameEnFull')} rules={[{ required: true }]}><Input /></Form.Item>
                       </Col>
                       <Col xs={24} sm={12}>
-                        <Form.Item name="nameAr" label="Name (Arabic)" rules={[{ required: true }]}><Input /></Form.Item>
+                        <Form.Item name="nameAr" label={t('nameArFull')} rules={[{ required: true }]}><Input /></Form.Item>
                       </Col>
                     </Row>
                     <Row gutter={16}>
                       <Col xs={24} sm={12}>
-                        <Form.Item name="genericNameEn" label="Generic / Active Ingredient (EN)"><Input /></Form.Item>
+                        <Form.Item name="genericNameEn" label={t('genericActiveIngredientEn')}><Input /></Form.Item>
                       </Col>
                       <Col xs={24} sm={12}>
-                        <Form.Item name="genericNameAr" label="Generic / Active Ingredient (AR)"><Input /></Form.Item>
+                        <Form.Item name="genericNameAr" label={t('genericActiveIngredientAr')}><Input /></Form.Item>
                       </Col>
                     </Row>
                     <Row gutter={16}>
                       <Col xs={24} sm={12}>
-                        <Form.Item name="barcode" label="Barcode"><Input /></Form.Item>
+                        <Form.Item name="barcode" label={t('barcode')}><Input /></Form.Item>
                       </Col>
                       <Col xs={24} sm={12}>
-                        <Form.Item name="barcode2" label="Secondary Barcode"><Input /></Form.Item>
+                        <Form.Item name="barcode2" label={t('secondaryBarcode')}><Input /></Form.Item>
                       </Col>
                     </Row>
-                    <Form.Item name="categoryId" label="Category">
-                      <Select placeholder="Select category" allowClear showSearch optionFilterProp="label" />
+                    <Form.Item name="categoryId" label={t('category')}>
+                      <Select placeholder={t('selectCategory')} allowClear showSearch optionFilterProp="label" />
                     </Form.Item>
-                    <Form.Item name="notes" label="Notes">
+                    <Form.Item name="notes" label={t('notes')}>
                       <Input.TextArea rows={2} />
                     </Form.Item>
                   </>
@@ -438,29 +438,29 @@ export function ProductsPage() {
               },
               {
                 key: 'pricing',
-                label: <span><DollarOutlined /> Pricing</span>,
+                label: <span><DollarOutlined /> {t('tabPricing')}</span>,
                 children: (
                   <>
                     <Row gutter={16}>
                       <Col xs={24} sm={12}>
-                        <Form.Item name="defaultSellingPrice" label="Selling Price" rules={[{ required: true }]}>
+                        <Form.Item name="defaultSellingPrice" label={t('sellingPrice')} rules={[{ required: true }]}>
                           <InputNumber style={{ width: '100%' }} min={0} precision={4} />
                         </Form.Item>
                       </Col>
                       <Col xs={24} sm={12}>
-                        <Form.Item name="minSellingPrice" label="Min Selling Price">
+                        <Form.Item name="minSellingPrice" label={t('minSellingPrice')}>
                           <InputNumber style={{ width: '100%' }} min={0} precision={4} />
                         </Form.Item>
                       </Col>
                     </Row>
                     <Row gutter={16}>
                       <Col xs={24} sm={12}>
-                        <Form.Item name="margin" label="Margin %" rules={[{ required: true }]}>
+                        <Form.Item name="margin" label={t('margin')} rules={[{ required: true }]}>
                           <InputNumber style={{ width: '100%' }} min={0} max={100} precision={2} />
                         </Form.Item>
                       </Col>
                       <Col xs={24} sm={12}>
-                        <Form.Item name="taxable" label="Taxable" valuePropName="checked">
+                        <Form.Item name="taxable" label={t('taxable')} valuePropName="checked">
                           <Switch />
                         </Form.Item>
                       </Col>
@@ -470,36 +470,36 @@ export function ProductsPage() {
               },
               {
                 key: 'pharmacy',
-                label: <span><MedicineBoxOutlined /> Pharmacy</span>,
+                label: <span><MedicineBoxOutlined /> {t('tabPharmacy')}</span>,
                 children: (
                   <>
                     <Row gutter={16}>
                       <Col xs={24} sm={12}>
-                        <Form.Item name="unit" label="Unit Type">
-                          <Select options={UNIT_OPTIONS} />
+                        <Form.Item name="unit" label={t('unitType')}>
+                          <Select options={getUnitOptions(t)} />
                         </Form.Item>
                       </Col>
                       <Col xs={24} sm={12}>
-                        <Form.Item name="unitsPerPack" label="Units Per Pack">
+                        <Form.Item name="unitsPerPack" label={t('unitsPerPack')}>
                           <InputNumber style={{ width: '100%' }} min={1} />
                         </Form.Item>
                       </Col>
                     </Row>
                     <Row gutter={16}>
                       <Col xs={24} sm={12}>
-                        <Form.Item name="trackExpiry" label="Track Expiry" valuePropName="checked">
+                        <Form.Item name="trackExpiry" label={t('trackExpiry')} valuePropName="checked">
                           <Switch />
                         </Form.Item>
                       </Col>
                       <Col xs={24} sm={12}>
-                        <Form.Item name="requirePrescription" label="Requires Prescription" valuePropName="checked">
+                        <Form.Item name="requirePrescription" label={t('requiresPrescription')} valuePropName="checked">
                           <Switch />
                         </Form.Item>
                       </Col>
                     </Row>
                     <Row gutter={16}>
                       <Col xs={24} sm={12}>
-                        <Form.Item name="isService" label="Is Service" valuePropName="checked">
+                        <Form.Item name="isService" label={t('isService')} valuePropName="checked">
                           <Switch />
                         </Form.Item>
                       </Col>
@@ -509,11 +509,11 @@ export function ProductsPage() {
               },
               {
                 key: 'settings',
-                label: <span><SettingOutlined /> Settings</span>,
+                label: <span><SettingOutlined /> {t('tabSettings')}</span>,
                 children: (
                   <Row gutter={16}>
                     <Col xs={24} sm={12}>
-                      <Form.Item name="isActive" label="Active" valuePropName="checked">
+                      <Form.Item name="isActive" label={t('common:active')} valuePropName="checked">
                         <Switch />
                       </Form.Item>
                     </Col>

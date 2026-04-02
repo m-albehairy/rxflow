@@ -1,0 +1,20 @@
+@media print {
+  body > *:not(.receipt-print-overlay) {
+    display: none !important;
+  }
+  .receipt-print-overlay {
+    display: block !important;
+    position: static !important;
+    background: #fff !important;
+    color: #000 !important;
+  }
+  .receipt-print-container {
+    display: block !important;
+  }
+  .receipt-copy + .receipt-copy {
+    page-break-before: always;
+  }
+  @page {
+    margin: 2mm;
+  }
+}

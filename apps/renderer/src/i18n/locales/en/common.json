@@ -121,5 +121,7 @@
   "lock_incorrectPin": "Incorrect PIN. Please try again.",
   "lock_switchAccount": "Switch Account",
   "lock_screenLocked": "Screen is locked",
-  "lock_noPinSet": "Please set a PIN code in your profile first"
+  "lock_noPinSet": "Please set a PIN code in your profile first",
+  "create": "Create",
+  "update": "Update"
 }

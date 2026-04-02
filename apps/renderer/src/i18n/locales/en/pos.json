@@ -122,5 +122,19 @@
   "back": "Back",
   "processExchange": "Process Exchange",
   "yes": "Yes",
-  "no": "No"
+  "no": "No",
+  "saleComplete": "Sale Complete!",
+  "invoiceCreated": "Invoice #{{number}} created",
+  "receiptInvoice": "INVOICE",
+  "receiptCashier": "Cashier",
+  "receiptCustomer": "Customer",
+  "receiptPaid": "Paid",
+  "receiptItem": "Item",
+  "receiptPrice": "Price",
+  "receiptDisc": "Disc%",
+  "receiptSubtotal": "Subtotal",
+  "receiptDiscount": "Discount",
+  "receiptTax": "Tax",
+  "receiptTotal": "TOTAL",
+  "receiptChange": "Change"
 }

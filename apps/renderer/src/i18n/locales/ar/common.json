@@ -121,5 +121,7 @@
   "lock_incorrectPin": "رمز PIN غير صحيح. حاول مرة أخرى.",
   "lock_switchAccount": "تبديل الحساب",
   "lock_screenLocked": "الشاشة مقفلة",
-  "lock_noPinSet": "يرجى تعيين رمز PIN في ملفك الشخصي أولاً"
+  "lock_noPinSet": "يرجى تعيين رمز PIN في ملفك الشخصي أولاً",
+  "create": "إنشاء",
+  "update": "تحديث"
 }

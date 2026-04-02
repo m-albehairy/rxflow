@@ -114,6 +114,16 @@ export class SetupService {
       { key: 'DRAWER_ENABLED', value: dto.drawerEnabled ?? false, group: 'hardware' },
       { key: 'LOW_STOCK_THRESHOLD', value: 10, group: 'stock' },
       { key: 'EXPIRY_ALERT_DAYS', value: 30, group: 'stock' },
+      // Printing / Receipt settings
+      { key: 'PHARMACY_PHONE', value: '', group: 'general' },
+      { key: 'RECEIPT_HEADER', value: '', group: 'printing' },
+      { key: 'RECEIPT_HEADER_AR', value: '', group: 'printing' },
+      { key: 'RECEIPT_FOOTER', value: 'Thank you for your visit!', group: 'printing' },
+      { key: 'RECEIPT_FOOTER_AR', value: 'شكراً لزيارتكم!', group: 'printing' },
+      { key: 'RECEIPT_SHOW_LOGO', value: false, group: 'printing' },
+      { key: 'RECEIPT_AUTO_PRINT', value: false, group: 'printing' },
+      { key: 'RECEIPT_PRINT_COPIES', value: 1, group: 'printing' },
+      { key: 'RECEIPT_PAPER_SIZE', value: '80mm', group: 'printing' },
     ];
   }
 

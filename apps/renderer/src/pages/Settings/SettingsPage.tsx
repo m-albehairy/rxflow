@@ -5,18 +5,21 @@ import {
 } from 'antd';
 import {
   SettingOutlined, DollarOutlined, BgColorsOutlined, SaveOutlined,
-  ShoppingOutlined, AppstoreOutlined, UnorderedListOutlined,
+  ShoppingOutlined, AppstoreOutlined, UnorderedListOutlined, BellOutlined,
+  PrinterOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { settingsApi } from '@/api/settings.api';
 import { useSettings } from '@/hooks/useSettings';
 import { ThemeCustomizer } from '@/components/common/ThemeCustomizer';
+import { NotificationSettings } from './NotificationSettings';
+import { PrintSettings } from './PrintSettings';
 import { useUIStore } from '@/store/ui.store';
 
 const { Title, Text } = Typography;
 
 /** Small helper: renders a label with a muted description below it. */
-function FieldLabel({ label, description }: { label: string; description?: string }) {
+export function FieldLabel({ label, description }: { label: string; description?: string }) {
   return (
     <div>
       <span>{label}</span>
@@ -183,6 +186,20 @@ export function SettingsPage() {
         <span><BgColorsOutlined style={{ marginInlineEnd: 6 }} />{t('theme')}</span>
       ),
       children: <ThemeCustomizer />,
+    },
+    {
+      key: 'printing',
+      label: (
+        <span><PrinterOutlined style={{ marginInlineEnd: 6 }} />{t('printing')}</span>
+      ),
+      children: <PrintSettings cardStyle={cardStyle} />,
+    },
+    {
+      key: 'notifications',
+      label: (
+        <span><BellOutlined style={{ marginInlineEnd: 6 }} />{t('notifications:preferences')}</span>
+      ),
+      children: <NotificationSettings cardStyle={cardStyle} />,
     },
   ];
 
